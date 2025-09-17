@@ -9,7 +9,7 @@ const program = Effect.gen(function* () {
 		prompt: "Why is the sky blue?",
 	})
 	return new Response(response.text)
-}).pipe(Effect.provide(OpenAiLanguageModel.model("gpt-5-nano-2025-08-07")))
+}).pipe(Effect.provide(OpenAiLanguageModel.model("gpt-4o")))
 
 const MainLayer = OpenAiClient.layerConfig({
 	apiUrl: Config.string("OPENAI_BASE_URL"),

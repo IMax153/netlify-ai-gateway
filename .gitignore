@@ -1,5 +1,18 @@
+# Nix
 .direnv
+
+# Netlify
+.netlify
+
+# Nitro
+.nitro
+
+# NodeJS
 node_modules
+
+# Tanstack 
+.tanstack
+dist
 
 # REMOVE
 count.txt

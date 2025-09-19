@@ -17,8 +17,8 @@ const MainLayer = OpenAiLanguageModel.model("gpt-4o-mini").pipe(
 )
 
 const createStream = Effect.fnUntraced(function* (prompt: Prompt.Prompt) {
-	return yield* LanguageModel.streamText({ prompt }).pipe(
-		toUIMessageStream,
+	return LanguageModel.streamText({ prompt }).pipe(
+		toUIMessageStream({}),
 		Stream.map((part) =>
 			Sse.encoder.write({
 				_tag: "Event",

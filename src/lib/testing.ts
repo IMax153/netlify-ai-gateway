@@ -6,6 +6,7 @@ import type {
 	UIMessageChunk,
 } from "ai"
 import { Cause, Encoding, Option, Predicate, type Schema, Stream } from "effect"
+import { dual } from "effect/Function"
 import type { Mutable } from "effect/Types"
 
 type ToUITool<Tool extends Tool.Any> = {
@@ -17,12 +18,19 @@ type ToUITool<Tool extends Tool.Any> = {
 // 	[Name in keyof Tools & string]: ToUITool<Tools[Name]>
 // }
 
-export const toUIMessageStream = <Tools extends Record<string, Tool.Any>>(
-	self: Stream.Stream<Response.StreamPart<Tools>, AiError.AiError>,
-	options: {
+export const toUIMessageStream = dual<
+	(options: {
 		readonly sendSources?: boolean
-	},
-): Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError> =>
+	}) => <Tools extends Record<string, Tool.Any>>(
+		self: Stream.Stream<Response.StreamPart<Tools>, AiError.AiError>,
+	) => Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError>,
+	<Tools extends Record<string, Tool.Any>>(
+		self: Stream.Stream<Response.StreamPart<Tools>, AiError.AiError>,
+		options: {
+			readonly sendSources?: boolean
+		},
+	) => Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError>
+>(2, (self, options) =>
 	self.pipe(
 		Stream.filterMap((part) => {
 			switch (part.type) {
@@ -171,7 +179,8 @@ export const toUIMessageStream = <Tools extends Record<string, Tool.Any>>(
 				}
 			}
 		}),
-	)
+	),
+)
 
 const withProviderExecuted = <
 	const Name extends string,

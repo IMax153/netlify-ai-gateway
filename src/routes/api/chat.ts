@@ -4,7 +4,7 @@ import { Sse } from "@effect/experimental"
 import { FetchHttpClient, HttpApp, HttpServerResponse } from "@effect/platform"
 import { createServerFileRoute } from "@tanstack/react-start/server"
 import type { UIMessage } from "ai"
-import { Config, Effect, Layer, Stream } from "effect"
+import { Config, Console, Layer, Stream } from "effect"
 import { toUIMessageStream } from "../../lib/testing"
 
 const MainLayer = OpenAiLanguageModel.model("gpt-4o-mini").pipe(

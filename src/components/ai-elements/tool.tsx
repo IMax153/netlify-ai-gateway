@@ -1,5 +1,12 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { cn } from "@/lib/utils"
 import type { ToolUIPart } from "ai"
 import {
 	CheckCircleIcon,
@@ -10,13 +17,6 @@ import {
 	XCircleIcon,
 } from "lucide-react"
 import type { ComponentProps, ReactNode } from "react"
-import { Badge } from "@/components/ui/badge"
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { cn } from "@/lib/utils"
 import { CodeBlock } from "./code-block"
 
 export type ToolProps = ComponentProps<typeof Collapsible>
@@ -50,7 +50,7 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
 	} as const
 
 	return (
-		<Badge className="rounded-full text-xs" variant="secondary">
+		<Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
 			{icons[status]}
 			{labels[status]}
 		</Badge>
@@ -107,7 +107,7 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
 )
 
 export type ToolOutputProps = ComponentProps<"div"> & {
-	output: ReactNode
+	output: ToolUIPart["output"]
 	errorText: ToolUIPart["errorText"]
 }
 
@@ -119,6 +119,16 @@ export const ToolOutput = ({
 }: ToolOutputProps) => {
 	if (!(output || errorText)) {
 		return null
+	}
+
+	let Output = <div>{output as ReactNode}</div>
+
+	if (typeof output === "object") {
+		Output = (
+			<CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+		)
+	} else if (typeof output === "string") {
+		Output = <CodeBlock code={output} language="json" />
 	}
 
 	return (
@@ -135,7 +145,7 @@ export const ToolOutput = ({
 				)}
 			>
 				{errorText && <div>{errorText}</div>}
-				{output && <div>{output}</div>}
+				{Output}
 			</div>
 		</div>
 	)

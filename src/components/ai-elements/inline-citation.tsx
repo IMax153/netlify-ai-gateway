@@ -1,14 +1,5 @@
 "use client"
 
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
-import {
-	type ComponentProps,
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useState,
-} from "react"
 import { Badge } from "@/components/ui/badge"
 import {
 	Carousel,
@@ -22,15 +13,15 @@ import {
 	HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { cn } from "@/lib/utils"
-
-// Context to share carousel API with child components
-const CarouselApiContext = createContext<CarouselApi | undefined>(undefined)
-
-// Hook to access carousel API from the nearest InlineCitationCarousel parent
-const useCarouselApi = () => {
-	const api = useContext(CarouselApiContext)
-	return api
-}
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
+import {
+	type ComponentProps,
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+} from "react"
 
 export type InlineCitationProps = ComponentProps<"span">
 
@@ -98,6 +89,13 @@ export const InlineCitationCardBody = ({
 	<HoverCardContent className={cn("relative w-80 p-0", className)} {...props} />
 )
 
+const CarouselApiContext = createContext<CarouselApi | undefined>(undefined)
+
+const useCarouselApi = () => {
+	const context = useContext(CarouselApiContext)
+	return context
+}
+
 export type InlineCitationCarouselProps = ComponentProps<typeof Carousel>
 
 export const InlineCitationCarousel = ({
@@ -128,7 +126,10 @@ export const InlineCitationCarouselItem = ({
 	className,
 	...props
 }: InlineCitationCarouselItemProps) => (
-	<CarouselItem className={cn("w-full space-y-2 p-4", className)} {...props} />
+	<CarouselItem
+		className={cn("w-full space-y-2 p-4 pl-8", className)}
+		{...props}
+	/>
 )
 
 export type InlineCitationCarouselHeaderProps = ComponentProps<"div">

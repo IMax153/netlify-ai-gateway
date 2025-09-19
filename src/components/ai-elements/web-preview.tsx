@@ -1,8 +1,5 @@
 "use client"
 
-import { ChevronDownIcon } from "lucide-react"
-import type { ComponentProps, ReactNode } from "react"
-import { createContext, useContext, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	Collapsible,
@@ -17,6 +14,9 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { ChevronDownIcon } from "lucide-react"
+import type { ComponentProps, ReactNode } from "react"
+import { createContext, useContext, useState } from "react"
 
 export type WebPreviewContextValue = {
 	url: string
@@ -142,27 +142,10 @@ export const WebPreviewUrl = ({
 		onKeyDown?.(event)
 	}
 
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		onChange?.(event)
-	}
-
-	// Use defaultValue for uncontrolled input when no onChange is provided
-	if (!onChange && !value) {
-		return (
-			<Input
-				className="h-8 flex-1 text-sm"
-				defaultValue={url}
-				onKeyDown={handleKeyDown}
-				placeholder="Enter URL..."
-				{...props}
-			/>
-		)
-	}
-
 	return (
 		<Input
 			className="h-8 flex-1 text-sm"
-			onChange={handleChange}
+			onChange={onChange}
 			onKeyDown={handleKeyDown}
 			placeholder="Enter URL..."
 			value={value ?? url}

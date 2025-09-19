@@ -19,8 +19,8 @@ const MainLayer = OpenAiLanguageModel.model("gpt-4o-mini").pipe(
 	Layer.provide(FetchHttpClient.layer),
 )
 
-const createStream = Effect.fnUntraced(function* (prompt: Prompt.Prompt) {
-	return LanguageModel.streamText({ prompt }).pipe(
+const createStream = (prompt: Prompt.Prompt) =>
+	LanguageModel.streamText({ prompt }).pipe(
 		toUIMessageStream({}),
 		Stream.map((part) =>
 			Sse.encoder.write({
@@ -44,7 +44,6 @@ const createStream = Effect.fnUntraced(function* (prompt: Prompt.Prompt) {
 		Stream.provideLayer(MainLayer),
 		HttpServerResponse.stream,
 	)
-})
 
 export const ServerRoute = createServerFileRoute("/api/chat").methods({
 	POST: async ({ request }) => {
@@ -69,10 +68,7 @@ export const ServerRoute = createServerFileRoute("/api/chat").methods({
 			Prompt.makeMessage("user", { content: parts }),
 		])
 
-		const handler = createStream(prompt).pipe(
-			Effect.provide(MainLayer),
-			HttpApp.toWebHandler,
-		)
+		const handler = createStream(prompt).pipe(HttpApp.toWebHandler)
 
 		return handler(request)
 	},

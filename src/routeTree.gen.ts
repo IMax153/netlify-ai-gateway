@@ -8,100 +8,100 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from "@tanstack/react-start/server"
+import { createServerRootRoute } from '@tanstack/react-start/server'
 
-import { Route as rootRouteImport } from "./routes/__root"
-import { Route as IndexRouteImport } from "./routes/index"
-import { ServerRoute as GatewayServerRouteImport } from "./routes/gateway"
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { ServerRoute as ApiChatServerRouteImport } from './routes/api/chat'
 
 const rootServerRouteImport = createServerRootRoute()
 
 const IndexRoute = IndexRouteImport.update({
-	id: "/",
-	path: "/",
-	getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const GatewayServerRoute = GatewayServerRouteImport.update({
-	id: "/gateway",
-	path: "/gateway",
-	getParentRoute: () => rootServerRouteImport,
+const ApiChatServerRoute = ApiChatServerRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-	"/": typeof IndexRoute
+  '/': typeof IndexRoute
 }
 export interface FileRoutesByTo {
-	"/": typeof IndexRoute
+  '/': typeof IndexRoute
 }
 export interface FileRoutesById {
-	__root__: typeof rootRouteImport
-	"/": typeof IndexRoute
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
 }
 export interface FileRouteTypes {
-	fileRoutesByFullPath: FileRoutesByFullPath
-	fullPaths: "/"
-	fileRoutesByTo: FileRoutesByTo
-	to: "/"
-	id: "__root__" | "/"
-	fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/'
+  id: '__root__' | '/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-	IndexRoute: typeof IndexRoute
+  IndexRoute: typeof IndexRoute
 }
 export interface FileServerRoutesByFullPath {
-	"/gateway": typeof GatewayServerRoute
+  '/api/chat': typeof ApiChatServerRoute
 }
 export interface FileServerRoutesByTo {
-	"/gateway": typeof GatewayServerRoute
+  '/api/chat': typeof ApiChatServerRoute
 }
 export interface FileServerRoutesById {
-	__root__: typeof rootServerRouteImport
-	"/gateway": typeof GatewayServerRoute
+  __root__: typeof rootServerRouteImport
+  '/api/chat': typeof ApiChatServerRoute
 }
 export interface FileServerRouteTypes {
-	fileServerRoutesByFullPath: FileServerRoutesByFullPath
-	fullPaths: "/gateway"
-	fileServerRoutesByTo: FileServerRoutesByTo
-	to: "/gateway"
-	id: "__root__" | "/gateway"
-	fileServerRoutesById: FileServerRoutesById
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths: '/api/chat'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to: '/api/chat'
+  id: '__root__' | '/api/chat'
+  fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-	GatewayServerRoute: typeof GatewayServerRoute
+  ApiChatServerRoute: typeof ApiChatServerRoute
 }
 
-declare module "@tanstack/react-router" {
-	interface FileRoutesByPath {
-		"/": {
-			id: "/"
-			path: "/"
-			fullPath: "/"
-			preLoaderRoute: typeof IndexRouteImport
-			parentRoute: typeof rootRouteImport
-		}
-	}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
-declare module "@tanstack/react-start/server" {
-	interface ServerFileRoutesByPath {
-		"/gateway": {
-			id: "/gateway"
-			path: "/gateway"
-			fullPath: "/gateway"
-			preLoaderRoute: typeof GatewayServerRouteImport
-			parentRoute: typeof rootServerRouteImport
-		}
-	}
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-	IndexRoute: IndexRoute,
+  IndexRoute: IndexRoute,
 }
 export const routeTree = rootRouteImport
-	._addFileChildren(rootRouteChildren)
-	._addFileTypes<FileRouteTypes>()
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-	GatewayServerRoute: GatewayServerRoute,
+  ApiChatServerRoute: ApiChatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
-	._addFileChildren(rootServerRouteChildren)
-	._addFileTypes<FileServerRouteTypes>()
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()

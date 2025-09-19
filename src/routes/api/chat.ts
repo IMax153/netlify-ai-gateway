@@ -10,6 +10,9 @@ import { toUIMessageStream } from "../../lib/testing"
 const MainLayer = OpenAiLanguageModel.model("gpt-4o-mini").pipe(
 	Layer.provide(
 		OpenAiClient.layerConfig({
+			apiUrl: Config.string("OPENAPI_BASE_URL").pipe(
+				Config.withDefault(undefined),
+			),
 			apiKey: Config.redacted("OPENAI_API_KEY"),
 		}),
 	),

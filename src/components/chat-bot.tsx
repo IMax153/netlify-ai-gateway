@@ -31,18 +31,9 @@ import {
 	PromptInputToolbar,
 	PromptInputTools,
 } from "@/components/ai-elements/prompt-input"
-import {
-	Reasoning,
-	ReasoningContent,
-	ReasoningTrigger,
-} from "@/components/ai-elements/reasoning"
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning"
 import { Response } from "@/components/ai-elements/response"
-import {
-	Source,
-	Sources,
-	SourcesContent,
-	SourcesTrigger,
-} from "@/components/ai-elements/sources"
+import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
 
 const models = [
 	{ value: "gpt-4o", name: "GPT-4o" },
@@ -56,8 +47,12 @@ export const ChatBot = () => {
 	const [model, setModel] = React.useState<string>(models[0].value)
 	const [webSearch, setWebSearch] = React.useState(false)
 	const { messages, sendMessage, status, regenerate } = useChat({
+		experimental_throttle: 50,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
+			prepareSendMessagesRequest({ messages, id }) {
+				return { body: { message: messages[messages.length - 1], id } }
+			},
 		}),
 	})
 
@@ -89,28 +84,19 @@ export const ChatBot = () => {
 			<div className="flex flex-col h-full">
 				<Conversation className="h-full">
 					<ConversationContent>
-						{messages.map((message) => (
-							<div key={message.id}>
+						{messages.map((message, index) => (
+							<div key={`${message.id}-${index}`}>
 								{message.role === "assistant" &&
-									message.parts.filter((part) => part.type === "source-url")
-										.length > 0 && (
+									message.parts.filter((part) => part.type === "source-url").length > 0 && (
 										<Sources>
 											<SourcesTrigger
-												count={
-													message.parts.filter(
-														(part) => part.type === "source-url",
-													).length
-												}
+												count={message.parts.filter((part) => part.type === "source-url").length}
 											/>
 											{message.parts
 												.filter((part) => part.type === "source-url")
 												.map((part, i) => (
 													<SourcesContent key={`${message.id}-${i}`}>
-														<Source
-															key={`${message.id}-${i}`}
-															href={part.url}
-															title={part.url}
-														/>
+														<Source key={`${message.id}-${i}`} href={part.url} title={part.url} />
 													</SourcesContent>
 												))}
 										</Sources>
@@ -125,25 +111,19 @@ export const ChatBot = () => {
 															<Response>{part.text}</Response>
 														</MessageContent>
 													</Message>
-													{message.role === "assistant" &&
-														i === messages.length - 1 && (
-															<Actions className="mt-2">
-																<Action
-																	onClick={() => regenerate()}
-																	label="Retry"
-																>
-																	<RefreshCcwIcon className="size-3" />
-																</Action>
-																<Action
-																	onClick={() =>
-																		navigator.clipboard.writeText(part.text)
-																	}
-																	label="Copy"
-																>
-																	<CopyIcon className="size-3" />
-																</Action>
-															</Actions>
-														)}
+													{message.role === "assistant" && i === messages.length - 1 && (
+														<Actions className="mt-2">
+															<Action onClick={() => regenerate()} label="Retry">
+																<RefreshCcwIcon className="size-3" />
+															</Action>
+															<Action
+																onClick={() => navigator.clipboard.writeText(part.text)}
+																label="Copy"
+															>
+																<CopyIcon className="size-3" />
+															</Action>
+														</Actions>
+													)}
 												</React.Fragment>
 											)
 										case "reasoning":
@@ -172,20 +152,12 @@ export const ChatBot = () => {
 					<ConversationScrollButton />
 				</Conversation>
 
-				<PromptInput
-					onSubmit={handleSubmit}
-					className="mt-4"
-					globalDrop
-					multiple
-				>
+				<PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
 					<PromptInputBody>
 						<PromptInputAttachments>
 							{(attachment) => <PromptInputAttachment data={attachment} />}
 						</PromptInputAttachments>
-						<PromptInputTextarea
-							onChange={(e) => setInput(e.target.value)}
-							value={input}
-						/>
+						<PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
 					</PromptInputBody>
 					<PromptInputToolbar>
 						<PromptInputTools>
@@ -213,10 +185,7 @@ export const ChatBot = () => {
 								</PromptInputModelSelectTrigger>
 								<PromptInputModelSelectContent>
 									{models.map((model) => (
-										<PromptInputModelSelectItem
-											key={model.value}
-											value={model.value}
-										>
+										<PromptInputModelSelectItem key={model.value} value={model.value}>
 											{model.name}
 										</PromptInputModelSelectItem>
 									))}

@@ -14,5 +14,6 @@ node_modules
 .tanstack
 dist
 
-# REMOVE
-count.txt
+# Persisted State
+.chats
+

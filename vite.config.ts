@@ -1,21 +1,14 @@
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
+import netlify from "@netlify/vite-plugin-tanstack-start"
 import viteReact from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tsConfigPaths from "vite-tsconfig-paths"
 
 export default defineConfig({
-	ssr: { noExternal: ["streamdown"] },
+	ssr: { noExternal: ["@ai-sdk-tools/devtools", "streamdown"] },
 	server: {
 		port: 3000,
 	},
-	plugins: [
-		tsConfigPaths(),
-		tanstackStart({
-			customViteReactPlugin: true,
-			target: "netlify",
-		}),
-		viteReact(),
-		tailwindcss(),
-	],
+	plugins: [tsConfigPaths(), tanstackStart(), netlify(), viteReact(), tailwindcss()],
 })

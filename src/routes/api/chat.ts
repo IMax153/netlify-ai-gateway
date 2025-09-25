@@ -1,14 +1,12 @@
 import { Chat } from "@effect/ai"
 import { OpenAiClient, OpenAiLanguageModel } from "@effect/ai-openai"
 import { Persistence, Sse } from "@effect/experimental"
-import { FetchHttpClient, FileSystem, HttpServerResponse, KeyValueStore } from "@effect/platform"
+import { FetchHttpClient, HttpServerResponse } from "@effect/platform"
 import { NodeContext } from "@effect/platform-node"
 import { createFileRoute } from "@tanstack/react-router"
 import type { UIMessage } from "ai"
 import { Config, Effect, Layer, Stream } from "effect"
 import { promptFromUIMessages, toUIMessageStream } from "@/lib/ai"
-
-const CHAT_PERSISTENCE_DIRECTORY = ".chats"
 
 const OpenAiLayer = OpenAiClient.layerConfig({
 	apiUrl: Config.string("OPENAI_BASE_URL").pipe(Config.withDefault(undefined)),
@@ -16,19 +14,7 @@ const OpenAiLayer = OpenAiClient.layerConfig({
 }).pipe(Layer.provide(FetchHttpClient.layer))
 
 const PersistenceLayer = Chat.layerPersisted({ storeId: "chat-" }).pipe(
-	Layer.provide(Persistence.layerKeyValueStore),
-	Layer.merge(
-		Layer.effectDiscard(
-			Effect.gen(function* () {
-				const fs = yield* FileSystem.FileSystem
-
-				if (!(yield* fs.exists(CHAT_PERSISTENCE_DIRECTORY))) {
-					yield* fs.makeDirectory(CHAT_PERSISTENCE_DIRECTORY)
-				}
-			}),
-		),
-	),
-	Layer.provide(KeyValueStore.layerFileSystem(CHAT_PERSISTENCE_DIRECTORY)),
+	Layer.provide(Persistence.layerMemory),
 	Layer.provide(NodeContext.layer),
 )
 

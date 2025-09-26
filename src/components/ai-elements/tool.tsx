@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
@@ -22,7 +23,7 @@ export const Tool = ({ className, ...props }: ToolProps) => (
 )
 
 export type ToolHeaderProps = {
-	type: ToolUIPart["type"]
+	type: string
 	state: ToolUIPart["state"]
 	className?: string
 }
@@ -92,7 +93,7 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
 )
 
 export type ToolOutputProps = ComponentProps<"div"> & {
-	output: ToolUIPart["output"]
+	output: ReactNode
 	errorText: ToolUIPart["errorText"]
 }
 
@@ -101,12 +102,14 @@ export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutpu
 		return null
 	}
 
-	let Output = <div>{output as ReactNode}</div>
+	let Output = output as ReactNode
 
-	if (typeof output === "object") {
-		Output = <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
-	} else if (typeof output === "string") {
-		Output = <CodeBlock code={output} language="json" />
+	if (!React.isValidElement(output)) {
+		if (typeof output === "object") {
+			Output = <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+		} else if (typeof output === "string") {
+			Output = <CodeBlock code={output} language="json" />
+		}
 	}
 
 	return (

@@ -1,15 +1,16 @@
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { CopyIcon, GlobeIcon, RefreshCcwIcon } from "lucide-react"
+import { CopyIcon, GlobeIcon, MessageSquare, RefreshCcwIcon } from "lucide-react"
 import * as React from "react"
 import { Action, Actions } from "@/components/ai-elements/actions"
 import {
 	Conversation,
 	ConversationContent,
+	ConversationEmptyState,
 	ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { Loader } from "@/components/ai-elements/loader"
-import { Message, MessageContent } from "@/components/ai-elements/message"
+import { Message, MessageAvatar, MessageContent } from "@/components/ai-elements/message"
 import {
 	PromptInput,
 	PromptInputActionAddAttachments,
@@ -34,6 +35,7 @@ import {
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning"
 import { Response } from "@/components/ai-elements/response"
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
+import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool"
 
 const models = [
 	{ value: "gpt-4o", name: "GPT-4o" },
@@ -110,6 +112,14 @@ export const ChatBot = () => {
 														<MessageContent>
 															<Response>{part.text}</Response>
 														</MessageContent>
+														<MessageAvatar
+															className="h-10 w-10"
+															src={
+																message.role === "user"
+																	? "https://github.com/IMax153.png"
+																	: "https://github.com/Effect-TS.png"
+															}
+														/>
 													</Message>
 													{message.role === "assistant" && i === messages.length - 1 && (
 														<Actions className="mt-2">
@@ -141,6 +151,26 @@ export const ChatBot = () => {
 													<ReasoningContent>{part.text}</ReasoningContent>
 												</Reasoning>
 											)
+										case "tool-GetWeather": {
+											return (
+												<Tool defaultOpen={true}>
+													<ToolHeader type="GetWeather" state={part.state} />
+													<ToolContent>
+														<ToolInput input={part.input} />
+														{part.state === "output-available" && (
+															<ToolOutput
+																errorText={part.errorText}
+																output={
+																	<Response className="p-2">
+																		{formatWeatherResult(part.output as any)}
+																	</Response>
+																}
+															/>
+														)}
+													</ToolContent>
+												</Tool>
+											)
+										}
 										default:
 											return null
 									}
@@ -198,4 +228,22 @@ export const ChatBot = () => {
 			</div>
 		</div>
 	)
+}
+
+function formatWeatherResult(result: {
+	readonly location: string
+	readonly temperature: string
+	readonly conditions: string
+	readonly humidity: string
+	readonly windSpeed: string
+	readonly lastUpdated: string
+}): string {
+	return `**Weather for ${result.location}**
+
+**Temperature:** ${result.temperature}  
+**Conditions:** ${result.conditions}  
+**Humidity:** ${result.humidity}  
+**Wind Speed:** ${result.windSpeed}  
+
+*Last updated: ${result.lastUpdated}*`
 }

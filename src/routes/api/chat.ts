@@ -1,4 +1,6 @@
 import * as Chat from "@effect/ai/Chat"
+import * as Tool from "@effect/ai/Tool"
+import * as Toolkit from "@effect/ai/Toolkit"
 import * as OpenAiClient from "@effect/ai-openai/OpenAiClient"
 import * as OpenAiLanguageModel from "@effect/ai-openai/OpenAiLanguageModel"
 import * as Persistence from "@effect/experimental/Persistence"
@@ -66,6 +68,46 @@ const PersistenceLayer = Chat.layerPersisted({ storeId: "chat-" }).pipe(
 	Layer.provide(NodeContext.layer),
 )
 
+const GetWeather = Tool.make("GetWeather", {
+	description: "Get the weather information for a specific location",
+	parameters: {
+		location: Schema.String.annotations({
+			description: "The city or location to get the weather for",
+		}),
+		units: Schema.NullOr(Schema.Literal("celsius", "farenheit")).annotations({
+			description: "The units to use for the temperature. Defaults to celsius.",
+		}),
+	},
+	success: Schema.Struct({
+		location: Schema.String,
+		temperature: Schema.String,
+		conditions: Schema.String,
+		humidity: Schema.String,
+		windSpeed: Schema.String,
+		lastUpdated: Schema.DateFromString,
+	}),
+})
+
+const ChatToolkit = Toolkit.make(GetWeather)
+
+const ChatToolkitLayer = ChatToolkit.toLayer({
+	GetWeather: Effect.fnUntraced(function* ({ location, units }) {
+		yield* Effect.sleep("2 seconds")
+
+		const temp =
+			units === "celsius" ? Math.floor(Math.random() * 35) + 5 : Math.floor(Math.random() * 63) + 41
+
+		return {
+			location,
+			temperature: `${temp}°${units === "celsius" ? "C" : "F"}`,
+			conditions: "Sunny",
+			humidity: `12%`,
+			windSpeed: `35 ${units === "celsius" ? "km/h" : "mph"}`,
+			lastUpdated: new Date(),
+		}
+	}),
+})
+
 // Create a schema for the type of `UIMessage`s that the chat endpoint expects.
 const ChatUIMessage = UIMessage()
 
@@ -106,7 +148,12 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	// Create a stream that will issue a request to the large language model
 	// provider and stream back response parts. Also inject the model that we
 	// want to use here (though it could be done at any point).
-	const stream = chat.streamText({ prompt }).pipe(Stream.provideLayer(model))
+	const stream = chat
+		.streamText({
+			prompt,
+			toolkit: ChatToolkit,
+		})
+		.pipe(Stream.provideSomeLayer(model))
 
 	const sseStream = stream.pipe(
 		// Convert the stream response parts into `UIMessage` parts. Specifying
@@ -129,7 +176,7 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	})
 }).pipe(
 	// Provide the OpenAI client and persistence dependencies to our app
-	Effect.provide([OpenAiClientLayer, PersistenceLayer]),
+	Effect.provide([OpenAiClientLayer, PersistenceLayer, ChatToolkitLayer]),
 	// TODO: implement a proper error domain for our route handler
 	Effect.tapErrorCause(Effect.logError),
 	Effect.orDie,

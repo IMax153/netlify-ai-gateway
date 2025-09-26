@@ -8,7 +8,6 @@ export const Route = createFileRoute("/")({
 			<ChatBot />,
 			{process.env.NODE_ENV === "development" && (
 				<AIDevtools
-					debug
 					config={{
 						position: "right",
 						throttle: {

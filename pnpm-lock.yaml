@@ -32,6 +32,9 @@ devDependencies:
   '@effect/platform-node':
     specifier: ^0.97.1
     version: 0.97.1(@effect/cluster@0.49.3)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(@effect/sql@0.45.0)(effect@3.17.14)
+  '@netlify/blobs':
+    specifier: ^10.0.11
+    version: 10.0.11
   '@netlify/vite-plugin-tanstack-start':
     specifier: ^1.0.1
     version: 1.0.1(@tanstack/react-start@1.132.7)(vite@7.1.7)

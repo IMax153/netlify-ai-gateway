@@ -1,26 +1,21 @@
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { CopyIcon, GlobeIcon, MessageSquare, RefreshCcwIcon } from "lucide-react"
+import { CopyIcon, RefreshCcwIcon } from "lucide-react"
 import * as React from "react"
 import { Action, Actions } from "@/components/ai-elements/actions"
 import {
 	Conversation,
 	ConversationContent,
-	ConversationEmptyState,
 	ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import { Loader } from "@/components/ai-elements/loader"
 import { Message, MessageAvatar, MessageContent } from "@/components/ai-elements/message"
 import {
 	PromptInput,
-	PromptInputActionAddAttachments,
 	PromptInputActionMenu,
 	PromptInputActionMenuContent,
 	PromptInputActionMenuTrigger,
-	PromptInputAttachment,
-	PromptInputAttachments,
 	PromptInputBody,
-	PromptInputButton,
 	type PromptInputMessage,
 	PromptInputModelSelect,
 	PromptInputModelSelectContent,
@@ -38,22 +33,34 @@ import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool"
 
 const models = [
+	{ value: "gpt-4o-mini", name: "GPT-4o Mini" },
 	{ value: "gpt-4o", name: "GPT-4o" },
-	{ value: "claude-3-5-sonnet", name: "Claude 3.5 Sonnet" },
-	{ value: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
-	{ value: "llama-3.1-70b", name: "Llama 3.1 70B" },
 ]
 
-export const ChatBot = () => {
+export function Chat() {
 	const [input, setInput] = React.useState("")
-	const [model, setModel] = React.useState<string>(models[0].value)
-	const [webSearch, setWebSearch] = React.useState(false)
+	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
+
+	// Ensure we are never using a stale reference to the selected model when
+	// the request to the server is prepared / sent
+	const currentModelIdRef = React.useRef(currentModelId)
+	React.useEffect(() => {
+		currentModelIdRef.current = currentModelId
+	}, [currentModelId])
+
 	const { messages, sendMessage, status, regenerate } = useChat({
 		experimental_throttle: 50,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
-			prepareSendMessagesRequest({ messages, id }) {
-				return { body: { message: messages[messages.length - 1], id } }
+			prepareSendMessagesRequest(request) {
+				return {
+					body: {
+						id: request.id,
+						message: request.messages.at(-1),
+						selectedChatModel: currentModelIdRef.current,
+						...request.body,
+					},
+				}
 			},
 		}),
 	})
@@ -72,12 +79,10 @@ export const ChatBot = () => {
 				files: message.files,
 			},
 			{
-				body: {
-					model: model,
-					webSearch: webSearch,
-				},
+				body: { model: currentModelId },
 			},
 		)
+
 		setInput("")
 	}
 
@@ -184,31 +189,19 @@ export const ChatBot = () => {
 
 				<PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
 					<PromptInputBody>
-						<PromptInputAttachments>
-							{(attachment) => <PromptInputAttachment data={attachment} />}
-						</PromptInputAttachments>
 						<PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
 					</PromptInputBody>
 					<PromptInputToolbar>
 						<PromptInputTools>
 							<PromptInputActionMenu>
 								<PromptInputActionMenuTrigger />
-								<PromptInputActionMenuContent>
-									<PromptInputActionAddAttachments />
-								</PromptInputActionMenuContent>
+								<PromptInputActionMenuContent>No actions at this time</PromptInputActionMenuContent>
 							</PromptInputActionMenu>
-							<PromptInputButton
-								variant={webSearch ? "default" : "ghost"}
-								onClick={() => setWebSearch(!webSearch)}
-							>
-								<GlobeIcon size={16} />
-								<span>Search</span>
-							</PromptInputButton>
 							<PromptInputModelSelect
 								onValueChange={(value) => {
-									setModel(value)
+									setCurrentModelId(value)
 								}}
-								value={model}
+								value={currentModelId}
 							>
 								<PromptInputModelSelectTrigger>
 									<PromptInputModelSelectValue />

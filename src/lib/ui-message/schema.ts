@@ -447,7 +447,7 @@ export const UIMessage = <
 >(options?: {
 	readonly metadata?: MetadataSchema | undefined
 	readonly data?: DataFields | undefined
-	readonly toolkit: Toolkit.Toolkit<Tools>
+	readonly toolkit?: Toolkit.Toolkit<Tools>
 }): Schema.Schema<
 	UIMessage<
 		Schema.Schema.Type<MetadataSchema>,
@@ -463,7 +463,7 @@ export const UIMessage = <
 > => {
 	const metadata = options?.metadata ?? Schema.Void
 	const data = options?.data
-	const tools = options?.toolkit.tools
+	const tools = options?.toolkit?.tools
 
 	const members: Array<Schema.Schema.All> = [
 		UIStepStartPart,

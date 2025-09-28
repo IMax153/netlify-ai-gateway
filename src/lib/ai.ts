@@ -110,214 +110,213 @@ export const toUIMessageStream = dual<
 	) => Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError>
 >(
 	(args) => Predicate.hasProperty(args, Stream.StreamTypeId),
-	Effect.fnUntraced(
-		function* (self, { history = undefined, sendReasoning = true, sendSources = false } = {}) {
-			let messageId: string | undefined
-			if (Predicate.isNotUndefined(history)) {
-				const messages = Predicate.hasProperty(history, Ref.RefTypeId)
-					? (yield* Ref.get(history)).content
-					: history.content
-				const lastMessage = messages[messages.length - 1]
-				if (Predicate.isNotUndefined(lastMessage) && lastMessage.role === "assistant") {
-					messageId = lastMessage.options[Chat.Persistence.key]?.messageId as string | undefined
-				}
+	Effect.fnUntraced(function* (
+		self,
+		{ history = undefined, sendReasoning = true, sendSources = false } = {},
+	) {
+		let messageId: string | undefined
+		if (Predicate.isNotUndefined(history)) {
+			const messages = Predicate.hasProperty(history, Ref.RefTypeId)
+				? (yield* Ref.get(history)).content
+				: history.content
+			const lastMessage = messages[messages.length - 1]
+			if (Predicate.isNotUndefined(lastMessage) && lastMessage.role === "assistant") {
+				messageId = lastMessage.options[Chat.Persistence.key]?.messageId as string | undefined
 			}
-			return self.pipe(
-				Stream.map((part): ReadonlyArray<UIMessageChunk> => {
-					switch (part.type) {
-						case "response-metadata": {
-							return [
-								{
-									type: "start",
-									...{ messageId },
-								},
-								{ type: "start-step" },
-							]
-						}
+		}
+		return self.pipe(
+			Stream.mapConcat((part): ReadonlyArray<UIMessageChunk> => {
+				switch (part.type) {
+					case "response-metadata": {
+						return [
+							{
+								type: "start",
+								...{ messageId },
+							},
+							{ type: "start-step" },
+						]
+					}
 
-						case "text-start": {
-							return [
-								{
-									type: "text-start",
-									id: part.id,
-									...withProviderMetadata(part),
-								},
-							]
-						}
+					case "text-start": {
+						return [
+							{
+								type: "text-start",
+								id: part.id,
+								...withProviderMetadata(part),
+							},
+						]
+					}
 
-						case "text-delta": {
+					case "text-delta": {
+						return [
+							{
+								type: "text-delta",
+								id: part.id,
+								delta: part.delta,
+								...withProviderMetadata(part),
+							},
+						]
+					}
+
+					case "text-end": {
+						return [
+							{
+								type: "text-end",
+								id: part.id,
+								...withProviderMetadata(part),
+							},
+						]
+					}
+
+					case "reasoning-start": {
+						return [
+							{
+								type: "reasoning-start",
+								id: part.id,
+								...withProviderMetadata(part),
+							},
+						]
+					}
+
+					case "reasoning-delta": {
+						if (sendReasoning) {
 							return [
 								{
-									type: "text-delta",
+									type: "reasoning-delta",
 									id: part.id,
 									delta: part.delta,
 									...withProviderMetadata(part),
 								},
 							]
 						}
+						return []
+					}
 
-						case "text-end": {
-							return [
-								{
-									type: "text-end",
-									id: part.id,
-									...withProviderMetadata(part),
-								},
-							]
-						}
+					case "reasoning-end": {
+						return [
+							{
+								type: "reasoning-end",
+								id: part.id,
+								...withProviderMetadata(part),
+							},
+						]
+					}
 
-						case "reasoning-start": {
-							return [
-								{
-									type: "reasoning-start",
-									id: part.id,
-									...withProviderMetadata(part),
-								},
-							]
-						}
+					case "tool-params-start": {
+						return [
+							{
+								type: "tool-input-start",
+								toolCallId: part.id,
+								toolName: part.providerName ?? part.name,
+								providerExecuted: part.providerExecuted,
+								...withProviderExecuted(part),
+							},
+						]
+					}
 
-						case "reasoning-delta": {
-							if (sendReasoning) {
-								return [
-									{
-										type: "reasoning-delta",
-										id: part.id,
-										delta: part.delta,
-										...withProviderMetadata(part),
-									},
-								]
-							}
-							return []
-						}
+					case "tool-params-delta": {
+						return [
+							{
+								type: "tool-input-delta",
+								toolCallId: part.id,
+								inputTextDelta: part.delta,
+							},
+						]
+					}
 
-						case "reasoning-end": {
-							return [
-								{
-									type: "reasoning-end",
-									id: part.id,
-									...withProviderMetadata(part),
-								},
-							]
-						}
+					case "tool-params-end": {
+						return []
+					}
 
-						case "tool-params-start": {
-							return [
-								{
-									type: "tool-input-start",
-									toolCallId: part.id,
-									toolName: part.providerName ?? part.name,
-									providerExecuted: part.providerExecuted,
-									...withProviderExecuted(part),
-								},
-							]
-						}
+					case "tool-call": {
+						return [
+							{
+								type: "tool-input-available",
+								toolCallId: part.id,
+								toolName: part.name,
+								input: part.params,
+								...withProviderExecuted(part),
+								...withProviderMetadata(part),
+							},
+						]
+					}
 
-						case "tool-params-delta": {
-							return [
-								{
-									type: "tool-input-delta",
-									toolCallId: part.id,
-									inputTextDelta: part.delta,
-								},
-							]
-						}
+					case "tool-result": {
+						return [
+							{
+								type: "tool-output-available",
+								toolCallId: part.id,
+								output: part.encodedResult,
+								...withProviderExecuted(part),
+							},
+						]
+					}
 
-						case "tool-params-end": {
-							return []
-						}
+					case "file": {
+						const base64 = Encoding.encodeBase64(part.data)
+						return [
+							{
+								type: "file",
+								mediaType: part.mediaType,
+								url: `data:${part.mediaType};base64,${base64}`,
+								...withProviderMetadata(part),
+							},
+						]
+					}
 
-						case "tool-call": {
-							return [
-								{
-									type: "tool-input-available",
-									toolCallId: part.id,
-									toolName: part.name,
-									input: part.params,
-									...withProviderExecuted(part),
-									...withProviderMetadata(part),
-								},
-							]
-						}
+					case "source": {
+						if (sendSources) {
+							switch (part.sourceType) {
+								case "document": {
+									return [
+										{
+											type: "source-document",
+											sourceId: part.id,
+											mediaType: part.mediaType,
+											title: part.title,
+											filename: part.fileName,
+											...withProviderMetadata(part),
+										},
+									]
+								}
 
-						case "tool-result": {
-							return [
-								{
-									type: "tool-output-available",
-									toolCallId: part.id,
-									output: part.encodedResult,
-									...withProviderExecuted(part),
-								},
-							]
-						}
-
-						case "file": {
-							const base64 = Encoding.encodeBase64(part.data)
-							return [
-								{
-									type: "file",
-									mediaType: part.mediaType,
-									url: `data:${part.mediaType};base64,${base64}`,
-									...withProviderMetadata(part),
-								},
-							]
-						}
-
-						case "source": {
-							if (sendSources) {
-								switch (part.sourceType) {
-									case "document": {
-										return [
-											{
-												type: "source-document",
-												sourceId: part.id,
-												mediaType: part.mediaType,
-												title: part.title,
-												filename: part.fileName,
-												...withProviderMetadata(part),
-											},
-										]
-									}
-
-									case "url": {
-										return [
-											{
-												type: "source-url",
-												sourceId: part.id,
-												url: part.url.toString(),
-												title: part.title,
-												...withProviderMetadata(part),
-											},
-										]
-									}
+								case "url": {
+									return [
+										{
+											type: "source-url",
+											sourceId: part.id,
+											url: part.url.toString(),
+											title: part.title,
+											...withProviderMetadata(part),
+										},
+									]
 								}
 							}
-							return []
 						}
-
-						case "error": {
-							return [
-								{
-									type: "error",
-									errorText: Cause.pretty(Cause.fail(part.error)),
-								},
-							]
-						}
-
-						case "finish": {
-							// TODO(Max): figure out how to handle response metadata
-							return [{ type: "finish-step" }, { type: "finish" }]
-						}
-
-						default: {
-							return []
-						}
+						return []
 					}
-				}),
-			)
-		},
-		Stream.unwrap,
-		Stream.flattenIterables,
-	),
+
+					case "error": {
+						return [
+							{
+								type: "error",
+								errorText: Cause.pretty(Cause.fail(part.error)),
+							},
+						]
+					}
+
+					case "finish": {
+						// TODO(Max): figure out how to handle response metadata
+						return [{ type: "finish-step" }, { type: "finish" }]
+					}
+
+					default: {
+						return []
+					}
+				}
+			}),
+		)
+	}, Stream.unwrap),
 )
 
 const withProviderExecuted = (

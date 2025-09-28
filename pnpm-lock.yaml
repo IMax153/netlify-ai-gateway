@@ -7,19 +7,19 @@ settings:
 devDependencies:
   '@ai-sdk-tools/devtools':
     specifier: ^0.6.1
-    version: 0.6.1(@ai-sdk/react@2.0.55)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)(zod@4.1.11)
+    version: 0.6.1(@ai-sdk/react@2.0.56)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)(zod@4.1.11)
   '@ai-sdk/react':
-    specifier: ^2.0.55
-    version: 2.0.55(react@19.1.1)(zod@4.1.11)
+    specifier: ^2.0.56
+    version: 2.0.56(react@19.1.1)(zod@4.1.11)
   '@biomejs/biome':
     specifier: ^2.2.4
     version: 2.2.4
   '@effect/ai':
-    specifier: ^0.28.3
-    version: 0.28.3(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14)
+    specifier: ^0.28.4
+    version: 0.28.4(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14)
   '@effect/ai-openai':
     specifier: ^0.31.1
-    version: 0.31.1(@effect/ai@0.28.3)(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(effect@3.17.14)
+    version: 0.31.1(@effect/ai@0.28.4)(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(effect@3.17.14)
   '@effect/experimental':
     specifier: ^0.55.0
     version: 0.55.0(@effect/platform@0.91.1)(effect@3.17.14)
@@ -29,12 +29,18 @@ devDependencies:
   '@effect/platform-node':
     specifier: ^0.97.1
     version: 0.97.1(@effect/cluster@0.49.3)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(@effect/sql@0.45.0)(effect@3.17.14)
+  '@fontsource/geist-mono':
+    specifier: ^5.2.7
+    version: 5.2.7
+  '@fontsource/geist-sans':
+    specifier: ^5.2.5
+    version: 5.2.5
   '@netlify/blobs':
     specifier: ^10.0.11
     version: 10.0.11
   '@netlify/vite-plugin-tanstack-start':
     specifier: ^1.0.1
-    version: 1.0.1(@tanstack/react-start@1.132.9)(vite@7.1.7)
+    version: 1.0.1(@tanstack/react-start@1.132.10)(vite@7.1.7)
   '@radix-ui/react-avatar':
     specifier: ^1.1.10
     version: 1.1.10(@types/react-dom@19.1.9)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)
@@ -72,8 +78,8 @@ devDependencies:
     specifier: ^1.132.7
     version: 1.132.7(react-dom@19.1.1)(react@19.1.1)
   '@tanstack/react-start':
-    specifier: ^1.132.9
-    version: 1.132.9(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7)
+    specifier: ^1.132.10
+    version: 1.132.10(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7)
   '@types/node':
     specifier: ^24.5.2
     version: 24.5.2
@@ -90,8 +96,8 @@ devDependencies:
     specifier: ^5.0.3
     version: 5.0.3(vite@7.1.7)
   ai:
-    specifier: ^5.0.55
-    version: 5.0.55(zod@4.1.11)
+    specifier: ^5.0.56
+    version: 5.0.56(zod@4.1.11)
   class-variance-authority:
     specifier: ^0.7.1
     version: 0.7.1
@@ -152,19 +158,19 @@ devDependencies:
 
 packages:
 
-  /@ai-sdk-tools/devtools@0.6.1(@ai-sdk/react@2.0.55)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)(zod@4.1.11):
+  /@ai-sdk-tools/devtools@0.6.1(@ai-sdk/react@2.0.56)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)(zod@4.1.11):
     resolution: {integrity: sha512-KDOO2NRAuxeTnXlIiNnq1LeYGNoLkGn6rNE/yPvx7sOOmukoX9cW6UVD2NV4fp2+7QKujklG+pA5fCsfPoH08g==}
     peerDependencies:
       '@ai-sdk/react': '>=0.0.1'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
     dependencies:
-      '@ai-sdk/react': 2.0.55(react@19.1.1)(zod@4.1.11)
+      '@ai-sdk/react': 2.0.56(react@19.1.1)(zod@4.1.11)
       '@emotion/react': 11.14.0(@types/react@19.1.14)(react@19.1.1)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0)(@types/react@19.1.14)(react@19.1.1)
       '@mui/icons-material': 7.3.2(@mui/material@7.3.2)(@types/react@19.1.14)(react@19.1.1)
       '@mui/material': 7.3.2(@emotion/react@11.14.0)(@emotion/styled@11.14.1)(@types/react@19.1.14)(react-dom@19.1.1)(react@19.1.1)
-      ai: 5.0.55(zod@4.1.11)
+      ai: 5.0.56(zod@4.1.11)
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       react-json-view-lite: 2.5.0(react@19.1.1)
@@ -206,8 +212,8 @@ packages:
       json-schema: 0.4.0
     dev: true
 
-  /@ai-sdk/react@2.0.55(react@19.1.1)(zod@4.1.11):
-    resolution: {integrity: sha512-8r73MyDLGRvR8bxj7S8EQ9/j3jZhc9+Z0IjouS/V69Rnx+zT+ZebonMM6PODe1jWkQXITLC0I9c+NLmKrfXVDQ==}
+  /@ai-sdk/react@2.0.56(react@19.1.1)(zod@4.1.11):
+    resolution: {integrity: sha512-7glIc65IZYFx+GZIcvMFdp+lkJnpsgRJNGRhStF6naUXtCrhjC5SyyXFMwZk+GMk3ZK9Kb83zdnWqtO7LOXGuA==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -217,7 +223,7 @@ packages:
         optional: true
     dependencies:
       '@ai-sdk/provider-utils': 3.0.10(zod@4.1.11)
-      ai: 5.0.55(zod@4.1.11)
+      ai: 5.0.56(zod@4.1.11)
       react: 19.1.1
       swr: 2.3.6(react@19.1.1)
       throttleit: 2.1.0
@@ -742,7 +748,7 @@ packages:
       node-source-walk: 7.0.1
     dev: true
 
-  /@effect/ai-openai@0.31.1(@effect/ai@0.28.3)(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(effect@3.17.14):
+  /@effect/ai-openai@0.31.1(@effect/ai@0.28.4)(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(effect@3.17.14):
     resolution: {integrity: sha512-GB8Mc2ZvIQfeeqE5fwElw+lR9A/WrLKC3WRhYRgAwwcAcGod3N0ffHHY841XmpAzGp7ByvxjrYSoz64NTZFiWQ==}
     peerDependencies:
       '@effect/ai': ^0.28.2
@@ -750,15 +756,15 @@ packages:
       '@effect/platform': ^0.91.1
       effect: ^3.17.14
     dependencies:
-      '@effect/ai': 0.28.3(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14)
+      '@effect/ai': 0.28.4(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14)
       '@effect/experimental': 0.55.0(@effect/platform@0.91.1)(effect@3.17.14)
       '@effect/platform': 0.91.1(effect@3.17.14)
       effect: 3.17.14
       gpt-tokenizer: 2.9.0
     dev: true
 
-  /@effect/ai@0.28.3(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14):
-    resolution: {integrity: sha512-Nr2TbUsIGRZaOfxMmPp5n/xJxJS1YY9ekZlWhJQh8I5F2LmAPckgwcg6Zm2CyaxFtYEDAUIRn+0z3fxf/eWJvw==}
+  /@effect/ai@0.28.4(@effect/experimental@0.55.0)(@effect/platform@0.91.1)(@effect/rpc@0.70.0)(effect@3.17.14):
+    resolution: {integrity: sha512-7SaxWqZqbthlRaiYvPCgqc3LrGGerKAk9pDZYopAnx1OIJFMqMFEbeiRSQwe6VumjX7i0YCkrS/1n6jXALJp4w==}
     peerDependencies:
       '@effect/experimental': ^0.55.0
       '@effect/platform': ^0.91.1
@@ -1354,6 +1360,14 @@ packages:
 
   /@floating-ui/utils@0.2.10:
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+    dev: true
+
+  /@fontsource/geist-mono@5.2.7:
+    resolution: {integrity: sha512-xVPVFISJg/K0VVd+aQN0Y7X/sw9hUcJPyDWFJ5GpyU3bHELhoRsJkPSRSHXW32mOi0xZCUQDOaPj1sqIFJ1FGg==}
+    dev: true
+
+  /@fontsource/geist-sans@5.2.5:
+    resolution: {integrity: sha512-anllOHyJbElRs9fV15TeDRqAeb1IKm4bSknPl6ZMoyPTx1BBy7logudcUwpNjmQLkzn4Q0JGQLRCUKJYoyST6A==}
     dev: true
 
   /@humanwhocodes/momoa@2.0.4:
@@ -2515,7 +2529,7 @@ packages:
     engines: {node: ^18.14.0 || >=20}
     dev: true
 
-  /@netlify/vite-plugin-tanstack-start@1.0.1(@tanstack/react-start@1.132.9)(vite@7.1.7):
+  /@netlify/vite-plugin-tanstack-start@1.0.1(@tanstack/react-start@1.132.10)(vite@7.1.7):
     resolution: {integrity: sha512-l+KMQ1KI1enU8uO9yKTnS4NUgyuPrD/3u+FgMwCj+4b9QZH+dPL+a8pjZZq5Qq9Lvlpb70Tp3D5xwt7CTk21zw==}
     engines: {node: ^22.12.0}
     peerDependencies:
@@ -2529,7 +2543,7 @@ packages:
         optional: true
     dependencies:
       '@netlify/vite-plugin': 2.6.0(vite@7.1.7)
-      '@tanstack/react-start': 1.132.9(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7)
+      '@tanstack/react-start': 1.132.10(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7)
       vite: 7.1.7(@types/node@24.5.2)
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -4196,8 +4210,8 @@ packages:
       tiny-warning: 1.0.3
     dev: true
 
-  /@tanstack/react-start-client@1.132.7(react-dom@19.1.1)(react@19.1.1):
-    resolution: {integrity: sha512-Jff7YcwiN0QgzL9CptsojWGvZ/cTk+E9JqMAnUP5JUKJRPOXwn3UCcsFuM/t18BAuQ4C2eGobcqljFGZremJXA==}
+  /@tanstack/react-start-client@1.132.10(react-dom@19.1.1)(react@19.1.1):
+    resolution: {integrity: sha512-jaiZE0S9+ehdG3aTaL/mvEEj9yjerKbrA5SwqH64RuVQfZ9sj+5B8pCg7oknAuKnD0cG2qndiI4mdrYaybBgyg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -4205,15 +4219,15 @@ packages:
     dependencies:
       '@tanstack/react-router': 1.132.7(react-dom@19.1.1)(react@19.1.1)
       '@tanstack/router-core': 1.132.7
-      '@tanstack/start-client-core': 1.132.7
+      '@tanstack/start-client-core': 1.132.10
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
     dev: true
 
-  /@tanstack/react-start-server@1.132.7(react-dom@19.1.1)(react@19.1.1):
-    resolution: {integrity: sha512-TdPPdiD0GNk61hSJ+LzXiHvBzjVNKPhOmOUgMcjBjiRIBtMaAQ05Ri0QaAcGeMdjuSJTdhEXpYsJZPguZDayFw==}
+  /@tanstack/react-start-server@1.132.10(react-dom@19.1.1)(react@19.1.1):
+    resolution: {integrity: sha512-InUMZePPyNj0JXDJUhW6A+4VA7fLpuhgadcUjOc8LvOSwkhxa56dlV155QFIS+uaiE/H6BJY0SRUfMBUQTIMsg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -4222,16 +4236,16 @@ packages:
       '@tanstack/history': 1.132.0
       '@tanstack/react-router': 1.132.7(react-dom@19.1.1)(react@19.1.1)
       '@tanstack/router-core': 1.132.7
-      '@tanstack/start-client-core': 1.132.7
-      '@tanstack/start-server-core': 1.132.7
+      '@tanstack/start-client-core': 1.132.10
+      '@tanstack/start-server-core': 1.132.10
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
     transitivePeerDependencies:
       - crossws
     dev: true
 
-  /@tanstack/react-start@1.132.9(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7):
-    resolution: {integrity: sha512-Kx6VvMJhFjplPgFkZRLBtXGjQObE4F180cMvc5kZLahLPmREaPAfg+nvKZ+LbYq4pVe74uVGmRsc68Uj87I2oA==}
+  /@tanstack/react-start@1.132.10(react-dom@19.1.1)(react@19.1.1)(vite@7.1.7):
+    resolution: {integrity: sha512-kfGDnTznwdjg4f6sk9q7oAApSQEHORLJqwAw2PzdWW+FM/IKou6Sr73GRaHaCUMG8/lHz6nVZbCMwBR++psZ3Q==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -4239,11 +4253,11 @@ packages:
       vite: '>=7.0.0'
     dependencies:
       '@tanstack/react-router': 1.132.7(react-dom@19.1.1)(react@19.1.1)
-      '@tanstack/react-start-client': 1.132.7(react-dom@19.1.1)(react@19.1.1)
-      '@tanstack/react-start-server': 1.132.7(react-dom@19.1.1)(react@19.1.1)
+      '@tanstack/react-start-client': 1.132.10(react-dom@19.1.1)(react@19.1.1)
+      '@tanstack/react-start-server': 1.132.10(react-dom@19.1.1)(react@19.1.1)
       '@tanstack/router-utils': 1.132.0
-      '@tanstack/start-client-core': 1.132.7
-      '@tanstack/start-plugin-core': 1.132.9(@tanstack/react-router@1.132.7)(vite@7.1.7)
+      '@tanstack/start-client-core': 1.132.10
+      '@tanstack/start-plugin-core': 1.132.10(@tanstack/react-router@1.132.7)(vite@7.1.7)
       pathe: 2.0.3
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
@@ -4373,8 +4387,8 @@ packages:
       - vite
     dev: true
 
-  /@tanstack/start-client-core@1.132.7:
-    resolution: {integrity: sha512-4tGDgM8Pkb+UVVw45KdJ9XP6KlLP8XWoj854nVbCc7HKo6adSSAopfhTcXtDMSZ1riYYi/xcB0iPJohihrk1NA==}
+  /@tanstack/start-client-core@1.132.10:
+    resolution: {integrity: sha512-r1taCgew8ZO+jzHKQR86wx6b33qwnKiiZN698iwfgHrN4i3cbKM4/cehl2IpMVB8w1QMB6ExzC5fidWqOK4Oxg==}
     engines: {node: '>=22.12.0'}
     dependencies:
       '@tanstack/router-core': 1.132.7
@@ -4384,8 +4398,8 @@ packages:
       tiny-warning: 1.0.3
     dev: true
 
-  /@tanstack/start-plugin-core@1.132.9(@tanstack/react-router@1.132.7)(vite@7.1.7):
-    resolution: {integrity: sha512-oWaqnkvRhQTTtpfCNIiWfKEDpl1/8IiNcDxZnoqzIDOcyTC7E+oZ9BZPCGBAXo8LXqlKMNrQYTRHpDbYhJ9r5w==}
+  /@tanstack/start-plugin-core@1.132.10(@tanstack/react-router@1.132.7)(vite@7.1.7):
+    resolution: {integrity: sha512-m+PJoReu1yrpgKH1iL8fY9OPnIFeVdpwCN105kmJujDFkbGoUa6W+UgW+1pWt5n7UL0Fs3nOscHoC4XRak+a/A==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       vite: '>=7.0.0'
@@ -4399,7 +4413,7 @@ packages:
       '@tanstack/router-plugin': 1.132.7(@tanstack/react-router@1.132.7)(vite@7.1.7)
       '@tanstack/router-utils': 1.132.0
       '@tanstack/server-functions-plugin': 1.132.0(vite@7.1.7)
-      '@tanstack/start-server-core': 1.132.7
+      '@tanstack/start-server-core': 1.132.10
       babel-dead-code-elimination: 1.0.10
       cheerio: 1.1.2
       exsolve: 1.0.7
@@ -4420,13 +4434,13 @@ packages:
       - webpack
     dev: true
 
-  /@tanstack/start-server-core@1.132.7:
-    resolution: {integrity: sha512-lrh9m8iqNW3OzK90ZB4SbQTgxLa7F4tfMBuXISglzN08d7Fg+dSIqiLQ3zf3p+vKRQLu97p8LTs2YGBNRSjBcA==}
+  /@tanstack/start-server-core@1.132.10:
+    resolution: {integrity: sha512-fk0jD91SwboxhPnSe7fxlgsYTmDFmaY9n1PEL698hSfeb1FjhXB0hKLGsE4v9REM1+DkoH2Utd+FdRTaCwDFqA==}
     engines: {node: '>=22.12.0'}
     dependencies:
       '@tanstack/history': 1.132.0
       '@tanstack/router-core': 1.132.7
-      '@tanstack/start-client-core': 1.132.7
+      '@tanstack/start-client-core': 1.132.10
       '@tanstack/start-storage-context': 1.132.7
       h3: 2.0.0-beta.4
       seroval: 1.3.2
@@ -5177,8 +5191,8 @@ packages:
     engines: {node: '>= 14'}
     dev: true
 
-  /ai@5.0.55(zod@4.1.11):
-    resolution: {integrity: sha512-Gl9E563mTKsOH9D1RHDXIfpgSSr1eTsAFu/RVLOIMa/gFmmhEaSEo1ctD1Y1VSqq5LQTuwfbUsOiT6i8aYIVHg==}
+  /ai@5.0.56(zod@4.1.11):
+    resolution: {integrity: sha512-Rl++Ogg6DxzFkVHAOJZzhqcqvqtBLGOP9mMxJOGr2EJWj5HH5zjqDcnRh6x5vBoca5kj/Gd0rvUZFMnyI+sRiw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8

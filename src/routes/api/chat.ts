@@ -1,8 +1,9 @@
 import * as Chat from "@effect/ai/Chat"
+import * as Prompt from "@effect/ai/Prompt"
 import * as Tool from "@effect/ai/Tool"
 import * as Toolkit from "@effect/ai/Toolkit"
-import * as OpenAiClient from "@effect/ai-openai/OpenAiClient"
 import * as OpenAiLanguageModel from "@effect/ai-openai/OpenAiLanguageModel"
+import * as OpenAiClient from "@effect/ai-openai/OpenAiClient"
 import * as Persistence from "@effect/experimental/Persistence"
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient"
 import * as HttpApp from "@effect/platform/HttpApp"
@@ -19,6 +20,30 @@ import { promptFromUIMessages, toUIMessageStream } from "@/lib/ai"
 import { toServerSentEventStream } from "@/lib/sse"
 import { UIMessage } from "@/lib/ui-message"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
+
+const SYSTEM_PROMPT = `You are a chatbot who always speaks as a stereotypical 
+dad, full of groan-inducing puns, cheesy one-liners, and dorky humor. Your 
+mission is to make the user roll their eyes and groan, but secretly smile.
+
+**Core Rules:**
+
+* Always respond in the tone of a corny dad who thinks they are way funnier than they actually are.
+* Where appropriate, weave in a dad joke, pun, or silly quip—even if it’s unrelated to the topic.
+* Keep your delivery wholesome, friendly, and slightly embarrassing, like a dad trying to be “cool.”
+* If the user asks a serious question, you should still *attempt* to answer it, but slip in a pun or dad joke along the way.
+* Occasionally call out your own jokes with phrases like “Eh? Get it?” or “I’ll see myself out…”
+* Never break character: you are always the dorky dad.
+
+**Examples of style:**
+
+* User: “What’s the weather like?”
+  You: “Well, it’s partly cloudy… but I’d say it’s 100% punny with a chance of dad jokes. Better wear your *son*-screen. Eh? Get it?”
+
+* User: “Can you help me with programming?”
+  You: “Of course, kiddo! But remember, 90% of coding is figuring out why your semicolon walked out on you… it just couldn’t *commit*.”
+
+* User: “Tell me a joke.”
+  You: “Sure thing! Why don’t skeletons ever fight each other? … Because they don’t have the guts. Classic.”`
 
 // In production, we use the Effect config module to load an environment variable
 // that we have setup ourselves to determine the name of the blob store that we
@@ -109,7 +134,25 @@ const ChatToolkitLayer = ChatToolkit.toLayer({
 })
 
 // Create a schema for the type of `UIMessage`s that the chat endpoint expects.
-const ChatUIMessage = UIMessage()
+const ChatUIMessage = UIMessage({
+  data: {
+    notification: Schema.Struct({
+      message: Schema.String,
+      level: Schema.Literal("info")
+    }),
+    weather: Schema.Union(
+      Schema.Struct({
+        city: Schema.String,
+        status: Schema.Literal("loading")
+      }),
+      Schema.Struct({
+        city: Schema.String,
+        weather: Schema.String,
+        status: Schema.Literal("success")
+      })
+    )
+  }
+})
 
 // Construct an `HttpApp` to handle the request / response lifecycle of our
 // Netlify function.
@@ -126,24 +169,27 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	// Extract the chat persistence service from the Effect environment
 	const persistence = yield* Chat.Persistence
 
-	// Setup the OpenAI language model to use for the request to the model
-	const model = yield* OpenAiLanguageModel.model("gpt-4o-mini")
-
 	// Parse the incoming request from the client. The request is injected
 	// into the Effect environment from the route handler so we do not need to
 	// pass it around explicitly.
-	const { id: chatId, message } = yield* HttpServerRequest.schemaBodyJson(
+	const { id: chatId, message, selectedChatModel } = yield* HttpServerRequest.schemaBodyJson(
 		Schema.Struct({
 			id: Schema.String,
 			message: ChatUIMessage,
+      selectedChatModel: Schema.String
 		}),
 	)
+
+	// Setup the OpenAI language model to use for the request to the model
+	const model = yield* OpenAiLanguageModel.model(selectedChatModel)
 
 	// Get or create a new persistence store for the requested chat
 	const chat = yield* persistence.getOrCreate(chatId)
 
-	// Construct a prompt from the user message send by the client
-	const prompt = promptFromUIMessages([message])
+	// Construct a prompt from the user message sent by the client
+	const prompt = promptFromUIMessages([message]).pipe(
+    Prompt.setSystem(SYSTEM_PROMPT)
+  )
 
 	// Create a stream that will issue a request to the large language model
 	// provider and stream back response parts. Also inject the model that we
@@ -159,7 +205,9 @@ const App: HttpApp.Default = Effect.gen(function* () {
 		// Convert the stream response parts into `UIMessage` parts. Specifying
 		// the previous chat history will ensure that the correct message
 		// identifier is returned to the client to support persistence.
-		toUIMessageStream({ history: chat.history }),
+		toUIMessageStream({
+			history: chat.history,
+		}),
 
 		// Convert the `UIMessage` stream into a server-sent-event (SSE) stream.
 		// The provided schema will be used to safely encode the elements of the

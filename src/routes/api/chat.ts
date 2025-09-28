@@ -135,23 +135,23 @@ const ChatToolkitLayer = ChatToolkit.toLayer({
 
 // Create a schema for the type of `UIMessage`s that the chat endpoint expects.
 const ChatUIMessage = UIMessage({
-  data: {
-    notification: Schema.Struct({
-      message: Schema.String,
-      level: Schema.Literal("info")
-    }),
-    weather: Schema.Union(
-      Schema.Struct({
-        city: Schema.String,
-        status: Schema.Literal("loading")
-      }),
-      Schema.Struct({
-        city: Schema.String,
-        weather: Schema.String,
-        status: Schema.Literal("success")
-      })
-    )
-  }
+	data: {
+		notification: Schema.Struct({
+			message: Schema.String,
+			level: Schema.Literal("info"),
+		}),
+		weather: Schema.Union(
+			Schema.Struct({
+				city: Schema.String,
+				status: Schema.Literal("loading"),
+			}),
+			Schema.Struct({
+				city: Schema.String,
+				weather: Schema.String,
+				status: Schema.Literal("success"),
+			}),
+		),
+	},
 })
 
 // Construct an `HttpApp` to handle the request / response lifecycle of our
@@ -172,11 +172,15 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	// Parse the incoming request from the client. The request is injected
 	// into the Effect environment from the route handler so we do not need to
 	// pass it around explicitly.
-	const { id: chatId, message, selectedChatModel } = yield* HttpServerRequest.schemaBodyJson(
+	const {
+		id: chatId,
+		message,
+		selectedChatModel,
+	} = yield* HttpServerRequest.schemaBodyJson(
 		Schema.Struct({
 			id: Schema.String,
 			message: ChatUIMessage,
-      selectedChatModel: Schema.String
+			selectedChatModel: Schema.String,
 		}),
 	)
 
@@ -187,9 +191,7 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	const chat = yield* persistence.getOrCreate(chatId)
 
 	// Construct a prompt from the user message sent by the client
-	const prompt = promptFromUIMessages([message]).pipe(
-    Prompt.setSystem(SYSTEM_PROMPT)
-  )
+	const prompt = promptFromUIMessages([message]).pipe(Prompt.setSystem(SYSTEM_PROMPT))
 
 	// Create a stream that will issue a request to the large language model
 	// provider and stream back response parts. Also inject the model that we

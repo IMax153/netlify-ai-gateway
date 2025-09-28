@@ -37,8 +37,8 @@ const models = [
 	{ value: "gpt-4o", name: "GPT-4o" },
 ]
 
-export function Chat() {
-	const [input, setInput] = React.useState("")
+export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
+	const [input, setInput] = React.useState(initialPrompt)
 	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
 
 	// Ensure we are never using a stale reference to the selected model when

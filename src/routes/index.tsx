@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
 function RouteComponent() {
 	return (
 		<div className="h-screen">
-			<div className="absolute top-4 right-4 z-10 hidden md:flex items-center gap-2">
+			<div className="absolute top-4 right-4 z-10 flex items-center gap-2">
 				<Button size="sm" className="text-sm cursor-pointer" asChild>
 					<Link to="/chat">Go to chat</Link>
 				</Button>
@@ -123,13 +123,12 @@ function SamplePrompts() {
 					<Button
 						key={prompt}
 						variant="outline"
-						className="text-left justify-start h-auto p-3 bg-transparent hover:bg-primary/5 transition-colors cursor-pointer"
-						onClick={() => {
-							// onStartChat()
-							// We'll implement this in the main chat component
-						}}
+						className="h-auto p-3 bg-transparent text-center hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
+						asChild
 					>
-						{prompt}
+						<Link to="/chat" search={{ prompt }}>
+							{prompt}
+						</Link>
 					</Button>
 				))}
 			</div>

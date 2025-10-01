@@ -131,7 +131,7 @@ export const toUIMessageStream = dual<
 						return [
 							{
 								type: "start",
-								...{ messageId },
+								...(messageId !== undefined ? { messageId } : {}),
 							},
 							{ type: "start-step" },
 						]
@@ -274,7 +274,7 @@ export const toUIMessageStream = dual<
 											sourceId: part.id,
 											mediaType: part.mediaType,
 											title: part.title,
-											filename: part.fileName,
+											...(part.fileName ? { filename: part.fileName } : {}),
 											...withProviderMetadata(part),
 										},
 									]

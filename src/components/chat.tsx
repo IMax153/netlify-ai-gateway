@@ -76,7 +76,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		sendMessage(
 			{
 				text: message.text || "Sent with attachments",
-				files: message.files,
+				...(message.files !== undefined ? { files: message.files } : {}),
 			},
 			{
 				body: { model: currentModelId },
@@ -156,21 +156,14 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 													<ReasoningContent>{part.text}</ReasoningContent>
 												</Reasoning>
 											)
-										case "tool-GetWeather": {
+										case "tool-GetDadJoke": {
 											return (
 												<Tool defaultOpen={true}>
 													<ToolHeader type="GetWeather" state={part.state} />
 													<ToolContent>
 														<ToolInput input={part.input} />
 														{part.state === "output-available" && (
-															<ToolOutput
-																errorText={part.errorText}
-																output={
-																	<Response className="p-2">
-																		{formatWeatherResult(part.output as any)}
-																	</Response>
-																}
-															/>
+															<ToolOutput errorText={part.errorText} output={part.output as any} />
 														)}
 													</ToolContent>
 												</Tool>
@@ -221,22 +214,4 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			</div>
 		</div>
 	)
-}
-
-function formatWeatherResult(result: {
-	readonly location: string
-	readonly temperature: string
-	readonly conditions: string
-	readonly humidity: string
-	readonly windSpeed: string
-	readonly lastUpdated: string
-}): string {
-	return `**Weather for ${result.location}**
-
-**Temperature:** ${result.temperature}  
-**Conditions:** ${result.conditions}  
-**Humidity:** ${result.humidity}  
-**Wind Speed:** ${result.windSpeed}  
-
-*Last updated: ${result.lastUpdated}*`
 }

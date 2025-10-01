@@ -40,8 +40,8 @@ export type UIStepStartPartEncoded = typeof UIStepStartPart.Encoded
 export const UITextPart = Schema.Struct({
 	type: Schema.Literal("text"),
 	text: Schema.String,
-	state: Schema.optional(Schema.Literal("streaming", "done")),
-	providerMetadata: Schema.optional(ProviderMetadata),
+	state: Schema.optionalWith(Schema.Literal("streaming", "done"), { exact: true }),
+	providerMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UITextPart" })
 
 export type UITextPart = typeof UITextPart.Type
@@ -50,8 +50,8 @@ export type UITextPartEncoded = typeof UITextPart.Encoded
 export const UIReasoningPart = Schema.Struct({
 	type: Schema.Literal("reasoning"),
 	text: Schema.String,
-	state: Schema.optional(Schema.Literal("streaming", "done")),
-	providerMetadata: Schema.optional(ProviderMetadata),
+	state: Schema.optionalWith(Schema.Literal("streaming", "done"), { exact: true }),
+	providerMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIReasoningPart" })
 
 export type UIReasoningPart = typeof UIReasoningPart.Type
@@ -60,9 +60,9 @@ export type UIReasoningPartEncoded = typeof UIReasoningPart.Encoded
 export const UIFilePart = Schema.Struct({
 	type: Schema.Literal("file"),
 	mediaType: Schema.String,
-	filename: Schema.optional(Schema.String),
+	filename: Schema.optionalWith(Schema.String, { exact: true }),
 	url: Schema.String,
-	providerMetadata: Schema.optional(ProviderMetadata),
+	providerMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIFilePart" })
 
 export type UIFilePart = typeof UIFilePart.Type
@@ -73,8 +73,8 @@ export const UIDocumentSourcePart = Schema.Struct({
 	sourceId: Schema.String,
 	mediaType: Schema.String,
 	title: Schema.String,
-	filename: Schema.optional(Schema.String),
-	providerMetadata: Schema.optional(ProviderMetadata),
+	filename: Schema.optionalWith(Schema.String, { exact: true }),
+	providerMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIDocumentSourcePart" })
 
 export type UIDocumentSourcePart = typeof UIDocumentSourcePart.Type
@@ -84,8 +84,8 @@ export const UIUrlSourcePart = Schema.Struct({
 	type: Schema.Literal("source-url"),
 	sourceId: Schema.String,
 	url: Schema.String,
-	title: Schema.optional(Schema.String),
-	providerMetadata: Schema.optional(ProviderMetadata),
+	title: Schema.optionalWith(Schema.String, { exact: true }),
+	providerMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIUrlSourcePart" })
 
 export type UIUrlSourcePart = typeof UIUrlSourcePart.Type
@@ -117,7 +117,7 @@ export const UIDataPart = <Name extends string, Data, DataEncoded>(
 ): Schema.Schema<UIDataPart<Name, Data>, UIDataPartEncoded<Name, DataEncoded>> =>
 	Schema.Struct({
 		type: Schema.TemplateLiteral(Schema.Literal("data-"), Schema.Literal(name)),
-		id: Schema.optional(Schema.String),
+		id: Schema.optionalWith(Schema.String, { exact: true }),
 		data,
 	}).annotations({ identifier: `UIDataPart(${name})` })
 
@@ -157,7 +157,7 @@ export const UIToolInputStreamingPart = <T extends Tool.Any>(
 			DeepPartial<Tool.ParametersEncoded<T>> | undefined,
 			Tool.Requirements<T>
 		>,
-		providerExecuted: Schema.optional(Schema.Boolean),
+		providerExecuted: Schema.optionalWith(Schema.Boolean, { exact: true }),
 	}).annotations({ identifier: `UIToolInputStreamingPart(${tool.name})` })
 }
 
@@ -198,8 +198,8 @@ export const UIToolInputAvailablePart = <T extends Tool.Any>(
 			Tool.ParametersEncoded<T>,
 			Tool.Requirements<T>
 		>,
-		providerExecuted: Schema.optional(Schema.Boolean),
-		callProviderMetadata: Schema.optional(ProviderMetadata),
+		providerExecuted: Schema.optionalWith(Schema.Boolean, { exact: true }),
+		callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 	}).annotations({ identifier: `UIToolInputAvailablePart(${tool.name})` })
 
 export interface UIToolOutputAvailablePart<Name extends string, Input, Output> {
@@ -252,9 +252,9 @@ export const UIToolOutputAvailablePart = <T extends Tool.Any>(
 			Tool.SuccessEncoded<T>,
 			Tool.Requirements<T>
 		>,
-		providerExecuted: Schema.optional(Schema.Boolean),
-		preliminary: Schema.optional(Schema.Boolean),
-		callProviderMetadata: Schema.optional(ProviderMetadata),
+		providerExecuted: Schema.optionalWith(Schema.Boolean, { exact: true }),
+		preliminary: Schema.optionalWith(Schema.Boolean, { exact: true }),
+		callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 	}).annotations({ identifier: `UIToolOutputAvailablePart(${tool.name})` })
 
 export interface UIToolOutputErrorPart<Name extends string, Input> {
@@ -321,10 +321,10 @@ export const UIToolOutputErrorPart = <T extends Tool.Any>(
 			Tool.ParametersEncoded<T> | undefined,
 			Tool.Requirements<T>
 		>,
-		rawInput: Schema.optional(Schema.Unknown),
+		rawInput: Schema.optionalWith(Schema.Unknown, { exact: true }),
 		errorText: Schema.String,
-		providerExecuted: Schema.optional(Schema.Boolean),
-		callProviderMetadata: Schema.optional(ProviderMetadata),
+		providerExecuted: Schema.optionalWith(Schema.Boolean, { exact: true }),
+		callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 	}).annotations({ identifier: `UIToolOutputErrorPart(${tool.name})` })
 
 export const UIDynamicToolInputStreamingPart = Schema.Struct({
@@ -344,7 +344,7 @@ export const UIDynamicToolInputAvailablePart = Schema.Struct({
 	toolCallId: Schema.String,
 	state: Schema.Literal("input-available"),
 	input: Schema.Unknown,
-	callProviderMetadata: Schema.optional(ProviderMetadata),
+	callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIDynamicToolInputAvailablePart" })
 
 export type UIDynamicToolInputAvailablePart = typeof UIDynamicToolInputAvailablePart.Type
@@ -357,8 +357,8 @@ export const UIDynamicToolOutputAvailablePart = Schema.Struct({
 	state: Schema.Literal("output-available"),
 	input: Schema.Unknown,
 	output: Schema.Unknown,
-	preliminary: Schema.optional(Schema.Boolean),
-	callProviderMetadata: Schema.optional(ProviderMetadata),
+	preliminary: Schema.optionalWith(Schema.Boolean, { exact: true }),
+	callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIDynamicToolOutputAvailablePart" })
 
 export type UIDynamicToolOutputAvailablePart = typeof UIDynamicToolOutputAvailablePart.Type
@@ -372,7 +372,7 @@ export const UIDynamicToolOutputErrorPart = Schema.Struct({
 	state: Schema.Literal("output-error"),
 	input: Schema.Unknown,
 	errorText: Schema.String,
-	callProviderMetadata: Schema.optional(ProviderMetadata),
+	callProviderMetadata: Schema.optionalWith(ProviderMetadata, { exact: true }),
 }).annotations({ identifier: "UIDynamicToolOutputErrorPart" })
 
 export type UIDynamicToolOutputErrorPart = typeof UIDynamicToolOutputErrorPart.Type

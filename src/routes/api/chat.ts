@@ -1,9 +1,7 @@
 import * as Chat from "@effect/ai/Chat"
 import * as Prompt from "@effect/ai/Prompt"
-import * as Tool from "@effect/ai/Tool"
-import * as Toolkit from "@effect/ai/Toolkit"
-import * as OpenAiLanguageModel from "@effect/ai-openai/OpenAiLanguageModel"
 import * as OpenAiClient from "@effect/ai-openai/OpenAiClient"
+import * as OpenAiLanguageModel from "@effect/ai-openai/OpenAiLanguageModel"
 import * as Persistence from "@effect/experimental/Persistence"
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient"
 import * as HttpApp from "@effect/platform/HttpApp"
@@ -17,6 +15,7 @@ import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import * as Stream from "effect/Stream"
 import { promptFromUIMessages, toUIMessageStream } from "@/lib/ai"
+import { DadJokeTools, DadJokeToolsLayer } from "@/lib/ai/tools/dad-joke"
 import { toServerSentEventStream } from "@/lib/sse"
 import { UIMessage } from "@/lib/ui-message"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
@@ -69,12 +68,7 @@ const OpenAiClientLayer = OpenAiClient.layerConfig({
 	// to us by the Netlify AI Gateway. We still need an API key in development
 	// which is why there is no fallback.
 	apiKey: Config.redacted("OPENAI_API_KEY"),
-}).pipe(
-	// Accessing the OpenAI API requires some implementation of an HTTP client
-	// to be available. Given this function has access to fetch, we can just
-	// provide the `HttpClient` implementation that uses fetch to our program.
-	Layer.provide(FetchHttpClient.layer),
-)
+})
 
 // The persisted chat layer allows our program to create persisted chats
 const PersistenceLayer = Chat.layerPersisted({ storeId: "chat-" }).pipe(
@@ -86,6 +80,14 @@ const PersistenceLayer = Chat.layerPersisted({ storeId: "chat-" }).pipe(
 	// implementation that uses Netlify Blobs in production and the filesystem
 	// in development
 	Layer.provide(NetlifyOrFileSystemKVS(chatStoreId)),
+)
+
+// Merge together all the layers that our program needs
+const MainLayer = Layer.mergeAll(OpenAiClientLayer, PersistenceLayer, DadJokeToolsLayer).pipe(
+	// Accessing the OpenAI API and the DadJokes API both require an HTTP client
+	// to be available. Given this Netlify function has access to fetch, we can
+	// provide the `HttpClient` implementation that uses fetch to our program.
+	Layer.provide(FetchHttpClient.layer),
 	// Given that we use a filesystem-backed key / value store in development, we
 	// must provide an implementation of a filesystem. Since we will be running in
 	// a NodeJS environment, we provide an implementation of a file system that is
@@ -93,48 +95,9 @@ const PersistenceLayer = Chat.layerPersisted({ storeId: "chat-" }).pipe(
 	Layer.provide(NodeContext.layer),
 )
 
-const GetWeather = Tool.make("GetWeather", {
-	description: "Get the weather information for a specific location",
-	parameters: {
-		location: Schema.String.annotations({
-			description: "The city or location to get the weather for",
-		}),
-		units: Schema.NullOr(Schema.Literal("celsius", "farenheit")).annotations({
-			description: "The units to use for the temperature. Defaults to celsius.",
-		}),
-	},
-	success: Schema.Struct({
-		location: Schema.String,
-		temperature: Schema.String,
-		conditions: Schema.String,
-		humidity: Schema.String,
-		windSpeed: Schema.String,
-		lastUpdated: Schema.DateFromString,
-	}),
-})
-
-const ChatToolkit = Toolkit.make(GetWeather)
-
-const ChatToolkitLayer = ChatToolkit.toLayer({
-	GetWeather: Effect.fnUntraced(function* ({ location, units }) {
-		yield* Effect.sleep("2 seconds")
-
-		const temp =
-			units === "celsius" ? Math.floor(Math.random() * 35) + 5 : Math.floor(Math.random() * 63) + 41
-
-		return {
-			location,
-			temperature: `${temp}°${units === "celsius" ? "C" : "F"}`,
-			conditions: "Sunny",
-			humidity: `12%`,
-			windSpeed: `35 ${units === "celsius" ? "km/h" : "mph"}`,
-			lastUpdated: new Date(),
-		}
-	}),
-})
-
 // Create a schema for the type of `UIMessage`s that the chat endpoint expects.
 const ChatUIMessage = UIMessage({
+	toolkit: DadJokeTools,
 	data: {
 		notification: Schema.Struct({
 			message: Schema.String,
@@ -199,7 +162,7 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	const stream = chat
 		.streamText({
 			prompt,
-			toolkit: ChatToolkit,
+			toolkit: DadJokeTools,
 		})
 		.pipe(Stream.provideSomeLayer(model))
 
@@ -226,7 +189,7 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	})
 }).pipe(
 	// Provide the OpenAI client and persistence dependencies to our app
-	Effect.provide([OpenAiClientLayer, PersistenceLayer, ChatToolkitLayer]),
+	Effect.provide(MainLayer),
 	// TODO: implement a proper error domain for our route handler
 	Effect.tapErrorCause(Effect.logError),
 	Effect.orDie,

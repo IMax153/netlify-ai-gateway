@@ -50,7 +50,7 @@ export const Reasoning = memo(
 		const [isOpen, setIsOpen] = useControllableState({
 			prop: open,
 			defaultProp: defaultOpen,
-			onChange: onOpenChange,
+			...(onOpenChange !== undefined ? { onChange: onOpenChange } : {}),
 		})
 		const [duration, setDuration] = useControllableState({
 			prop: durationProp,

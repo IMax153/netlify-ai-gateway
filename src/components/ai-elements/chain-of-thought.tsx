@@ -1,12 +1,12 @@
 "use client"
 
 import { useControllableState } from "@radix-ui/react-use-controllable-state"
-import { Badge } from "@/components/ui/badge"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { cn } from "@/lib/utils"
 import { BrainIcon, ChevronDownIcon, DotIcon, type LucideIcon } from "lucide-react"
 import type { ComponentProps } from "react"
 import { createContext, memo, useContext } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { cn } from "@/lib/utils"
 
 type ChainOfThoughtContextValue = {
 	isOpen: boolean
@@ -41,7 +41,7 @@ export const ChainOfThought = memo(
 		const [isOpen, setIsOpen] = useControllableState({
 			prop: open,
 			defaultProp: defaultOpen,
-			onChange: onOpenChange,
+			...(onOpenChange !== undefined ? { onChange: onOpenChange } : {}),
 		})
 
 		return (

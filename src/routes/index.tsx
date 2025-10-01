@@ -31,18 +31,9 @@ function Hero() {
 	return (
 		<div className="space-y-4">
 			<div className="text-6xl mb-4 hover:scale-110 transition-transform cursor-default">👨‍💼</div>
-			<h1 className="text-4xl font-bold text-balance">
-				Welcome to Dad Joke AI
-				{/*
-              {userName && (
-                <span className="block text-2xl text-muted-foreground mt-2">
-                  Hi {userName}, I'm Dad! (And I'm not going anywhere... unlike when I went to get milk)
-                </span>
-              )}
-            */}
-			</h1>
+			<h1 className="text-4xl font-bold text-balance">Welcome to Dadbot</h1>
 			<p className="text-lg text-muted-foreground text-balance">
-				The most groan-worthy AI assistant on the internet. I'm not just artificially intelligent -
+				The most groan-worthy AI chat bot on the internet. I'm not just artificially intelligent -
 				I'm
 				<span className="font-semibold text-primary"> artificially hilarious</span>! Prepare
 				yourself for puns, wordplay, and jokes so bad they're good!
@@ -51,56 +42,59 @@ function Hero() {
 	)
 }
 
+const FEATURES = [
+	{
+		icon: () => (
+			<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+				<MessageSquare className="h-5 w-5 text-primary" />
+			</div>
+		),
+		heading: "Un-bear-ably Funny",
+		subheading: "Fresh puns and jokes on demand",
+	},
+	{
+		icon: () => (
+			<div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+				<Zap className="h-5 w-5 text-accent" />
+			</div>
+		),
+		heading: "Shockingly Fast",
+		subheading: "Instant groan-inducing responses",
+	},
+	{
+		icon: () => (
+			<div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
+				<Users className="h-5 w-5 text-chart-1" />
+			</div>
+		),
+		heading: "Family Tree-mendous",
+		subheading: "Clean humor for all ages",
+	},
+	{
+		icon: () => (
+			<div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
+				<Heart className="h-5 w-5 text-chart-2" />
+			</div>
+		),
+		heading: "Love-ably Dorky",
+		subheading: "Embracing the dad joke spirit",
+	},
+]
+
 function Features() {
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<Card className="p-4 hover:bg-accent/5 transition-colors">
-				<CardContent className="flex items-center gap-3 p-0">
-					<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-						<MessageSquare className="h-5 w-5 text-primary" />
-					</div>
-					<div className="text-left">
-						<h3 className="font-semibold">Un-bear-ably Funny</h3>
-						<p className="text-sm text-muted-foreground">Fresh puns and jokes on demand</p>
-					</div>
-				</CardContent>
-			</Card>
-
-			<Card className="p-4 hover:bg-accent/5 transition-colors">
-				<CardContent className="flex items-center gap-3 p-0">
-					<div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-						<Zap className="h-5 w-5 text-accent" />
-					</div>
-					<div className="text-left">
-						<h3 className="font-semibold">Shockingly Fast</h3>
-						<p className="text-sm text-muted-foreground">Instant groan-inducing responses</p>
-					</div>
-				</CardContent>
-			</Card>
-
-			<Card className="p-4 hover:bg-accent/5 transition-colors">
-				<CardContent className="flex items-center gap-3 p-0">
-					<div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
-						<Users className="h-5 w-5 text-chart-1" />
-					</div>
-					<div className="text-left">
-						<h3 className="font-semibold">Family Tree-mendous</h3>
-						<p className="text-sm text-muted-foreground">Clean humor for all ages</p>
-					</div>
-				</CardContent>
-			</Card>
-
-			<Card className="p-4 hover:bg-accent/5 transition-colors">
-				<CardContent className="flex items-center gap-3 p-0">
-					<div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-						<Heart className="h-5 w-5 text-chart-2" />
-					</div>
-					<div className="text-left">
-						<h3 className="font-semibold">Love-ably Dorky</h3>
-						<p className="text-sm text-muted-foreground">Embracing the dad joke spirit</p>
-					</div>
-				</CardContent>
-			</Card>
+			{FEATURES.map(({ heading, subheading, icon: Icon }) => (
+				<Card key={heading} className="p-4">
+					<CardContent className="flex items-center gap-3 p-0">
+						<Icon />
+						<div className="text-left">
+							<h3 className="font-semibold">{heading}</h3>
+							<p className="text-sm text-muted-foreground">{subheading}</p>
+						</div>
+					</CardContent>
+				</Card>
+			))}
 		</div>
 	)
 }
@@ -123,7 +117,7 @@ function SamplePrompts() {
 					<Button
 						key={prompt}
 						variant="outline"
-						className="h-auto p-3 bg-transparent text-center hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
+						className="h-auto p-3 bg-card text-center hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
 						asChild
 					>
 						<Link to="/chat" search={{ prompt }}>

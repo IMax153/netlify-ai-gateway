@@ -159,7 +159,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 										case "tool-GetDadJoke": {
 											return (
 												<Tool defaultOpen={true}>
-													<ToolHeader type="GetWeather" state={part.state} />
+													<ToolHeader type="GetDadJoke" state={part.state} />
 													<ToolContent>
 														<ToolInput input={part.input} />
 														{part.state === "output-available" && (

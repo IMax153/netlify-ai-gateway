@@ -13,7 +13,7 @@ export const Route = createFileRoute("/chat")({
 		const { prompt } = Route.useSearch()
 		return (
 			<>
-				<Chat initialPrompt={prompt} />,
+				<Chat initialPrompt={prompt} />
 				{process.env.NODE_ENV === "development" && (
 					<AIDevtools
 						config={{

@@ -36,26 +36,20 @@ export const toServerSentEventStream: {
 		self: Stream.Stream<A, E, R>,
 		schema: Schema.Schema<A, I, R2>,
 	): Stream.Stream<Uint8Array, E | ParseError, R | R2>
-} = dual(
-	2,
-	<A, E, R, I, R2>(
-		self: Stream.Stream<A, E, R>,
-		schema: Schema.Schema<A, I, R2>,
-	): Stream.Stream<Uint8Array, E | ParseError, R | R2> => {
-		const encode = Schema.encode(Schema.parseJson(schema))
-		return self.pipe(
-			Stream.mapEffect((value) =>
-				Effect.map(encode(value), (data) =>
-					Sse.encoder.write({
-						_tag: "Event",
-						id: undefined,
-						event: "message",
-						data,
-					}),
-				),
+} = dual(2, <A, E, R, I, R2>(self: Stream.Stream<A, E, R>, schema: Schema.Schema<A, I, R2>) => {
+	const encode = Schema.encode(Schema.parseJson(schema))
+	return self.pipe(
+		Stream.mapEffect((value) =>
+			Effect.map(encode(value), (data) =>
+				Sse.encoder.write({
+					_tag: "Event",
+					id: undefined,
+					event: "message",
+					data,
+				}),
 			),
-			Stream.concat(SseDoneStream),
-			Stream.encodeText,
-		)
-	},
-)
+		),
+		Stream.concat(SseDoneStream),
+		Stream.encodeText,
+	)
+})

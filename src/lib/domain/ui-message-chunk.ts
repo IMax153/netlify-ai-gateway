@@ -454,7 +454,7 @@ export type PartsEncoded<
 | UIUrlSourcePartEncoded
 
 export interface UIMessageChunk<
-	Metadata extends Schema.Schema.Any,
+	Metadata extends Schema.Schema.All,
 	Data extends Schema.Struct.Fields,
 	Tools extends Record<string, Tool.Any>,
 > extends Schema.Schema<
@@ -468,7 +468,7 @@ export interface UIMessageChunk<
 }
 
 export const make = <
-	Metadata extends Schema.Schema.Any = typeof Schema.Void,
+	Metadata extends Schema.Schema.All = typeof Schema.Never,
 	Data extends Schema.Struct.Fields = {},
 	Tools extends Record<string, Tool.Any> = {},
 >(options?: {

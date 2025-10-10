@@ -489,7 +489,7 @@ export type Tools<Message> = Message extends UIMessage<infer _Metadata, infer _D
 	: never
 
 export interface UIMessage<
-	Metadata extends Schema.Schema.Any,
+	Metadata extends Schema.Schema.All,
 	Data extends Schema.Struct.Fields,
 	Tools extends Record<string, Tool.Any>,
 > extends Schema.Schema<
@@ -505,7 +505,7 @@ export interface UIMessage<
 export type Any = UIMessage<any, any, any>
 
 export const make = <
-	Metadata extends Schema.Schema.Any = typeof Schema.Void,
+	Metadata extends Schema.Schema.All = typeof Schema.Never,
 	Data extends Schema.Struct.Fields = {},
 	Tools extends Record<string, Tool.Any> = {},
 >(options?: {

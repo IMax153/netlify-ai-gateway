@@ -6,20 +6,19 @@ import * as Persistence from "@effect/experimental/Persistence"
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient"
 import * as HttpApp from "@effect/platform/HttpApp"
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
-import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Config from "effect/Config"
-import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
-import * as Stream from "effect/Stream"
 import { DadJokeTools, DadJokeToolsLayer } from "@/lib/ai/tools/dad-joke"
-import { createUIMessageStream } from "@/lib/ai/ui-message/create-ui-message-stream"
+import {
+	createUIMessageStream,
+	createUIMessageStreamResponse,
+} from "@/lib/ai/ui-message/create-ui-message-stream"
 import { promptFromUIMessages } from "@/lib/ai/ui-message/prompt-from-ui-messages"
 import * as UIMessage from "@/lib/domain/ui-message"
-import { toServerSentEventStream } from "@/lib/sse"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
 
 const SYSTEM_PROMPT = `You are a chatbot who always speaks as a stereotypical 
@@ -155,58 +154,50 @@ const App = Effect.gen(function* () {
 	// Get or create a new persistence store for the requested chat
 	const chat = yield* persistence.getOrCreate(chatId)
 
+	// Get the previous messages exchanged during the conversation
+	const history = yield* chat.history
+
 	// Construct a prompt from the user message sent by the client
-	const prompt = promptFromUIMessages([message]).pipe(Prompt.setSystem(SYSTEM_PROMPT))
+	const prompt = promptFromUIMessages([message])
 
-	// Create a stream that will issue a request to the large language model
-	// provider and stream back response parts. Also inject the model that we
-	// want to use here (though it could be done at any point).
-	// const stream = chat
-	// 	.streamText({
-	// 		prompt,
-	// 		toolkit: DadJokeTools,
-	// 	})
-	// 	.pipe(Stream.provideSomeLayer(model))
-	//
-	// const sseStream = stream.pipe(
-	// 	// Convert the stream response parts into `UIMessage` parts. Specifying
-	// 	// the previous chat history will ensure that the correct message
-	// 	// identifier is returned to the client to support persistence.
-	// 	toUIMessageStream(ChatUIMessage, {
-	// 		history: chat.history,
-	// 	}),
-	//
-	// 	// Convert the `UIMessage` stream into a server-sent-event (SSE) stream.
-	// 	// The provided schema will be used to safely encode the elements of the
-	// 	// stream.
-	// 	//
-	// 	// **NOTE**: For now, we are using `Schema.Any` until we finish support
-	// 	// for serialization of `UIMessage`s via Effect Schema.
-	// 	toServerSentEventStream(Schema.Any),
-	// )
+	// If this is the first message in the chat, set the system prompt
+	if (history.content.length === 0) {
+		Prompt.setSystem(prompt, SYSTEM_PROMPT)
+	}
 
+	// Create a stream of UI messages to send back to the client
 	const stream = yield* createUIMessageStream(ChatUIMessage, {
-		history: chat.history,
+		history,
 		execute: Effect.fnUntraced(function* ({ mailbox, mergeStream }) {
 			yield* mailbox.offer({
 				type: "data-notification",
 				data: { level: "info", message: "hi" },
 			})
 
-			yield* mergeStream(
+			// Restrict to a maximum of five consecutive turns
+			let turn = 0
+			// Get the initial response from the language model
+			let response = yield* mergeStream(
 				chat.streamText({
 					prompt,
 					toolkit: DadJokeTools,
 				}),
 			)
+			while (response.finishReason === "tool-calls" && turn < 5) {
+				response = yield* mergeStream(
+					chat.streamText({
+						prompt: [],
+						toolkit: DadJokeTools,
+					}),
+				)
+				turn++
+			}
 		}),
 	}).pipe(Effect.provide(model))
 
-	const sseStream = stream.pipe(toServerSentEventStream(Schema.Any))
-
-	// Convert the entire stream into a response stream.
-	return HttpServerResponse.stream(sseStream, {
-		contentType: "text/event-stream",
+	// Convert the stream into a response stream
+	return createUIMessageStreamResponse(ChatUIMessage, {
+		stream,
 	})
 }).pipe(
 	// TODO: implement a proper error domain for our route handler

@@ -31,6 +31,7 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import { Response } from "@/components/ai-elements/response"
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool"
+import type { ChatUIMessage } from "@/lib/domain/chat-message"
 
 const models = [
 	{ value: "gpt-4o-mini", name: "GPT-4o Mini" },
@@ -48,7 +49,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		currentModelIdRef.current = currentModelId
 	}, [currentModelId])
 
-	const { messages, sendMessage, status, regenerate } = useChat({
+	const { messages, sendMessage, status, regenerate } = useChat<ChatUIMessage>({
 		experimental_throttle: 50,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
@@ -163,7 +164,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 													<ToolContent>
 														<ToolInput input={part.input} />
 														{part.state === "output-available" && (
-															<ToolOutput errorText={part.errorText} output={part.output as any} />
+															<ToolOutput errorText={undefined} output={part.output as any} />
 														)}
 													</ToolContent>
 												</Tool>

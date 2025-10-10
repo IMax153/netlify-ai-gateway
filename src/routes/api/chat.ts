@@ -17,7 +17,7 @@ import * as Schema from "effect/Schema"
 import * as Stream from "effect/Stream"
 import { DadJokeTools, DadJokeToolsLayer } from "@/lib/ai/tools/dad-joke"
 import { createUIMessageStream } from "@/lib/ai/ui-message/create-ui-message-stream"
-import { promptFromUIMessages } from "@/lib/ai/ui-message/to-ui-message-stream"
+import { promptFromUIMessages } from "@/lib/ai/ui-message/prompt-from-ui-messages"
 import * as UIMessage from "@/lib/domain/ui-message"
 import { toServerSentEventStream } from "@/lib/sse"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
@@ -202,10 +202,7 @@ const App = Effect.gen(function* () {
 		}),
 	}).pipe(Effect.provide(model))
 
-	const sseStream = stream.pipe(
-		Stream.tap((part) => Console.dir(part, { depth: null, colors: true })),
-		toServerSentEventStream(Schema.Any),
-	)
+	const sseStream = stream.pipe(toServerSentEventStream(Schema.Any))
 
 	// Convert the entire stream into a response stream.
 	return HttpServerResponse.stream(sseStream, {

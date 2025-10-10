@@ -2,33 +2,7 @@ import type * as Tool from "@effect/ai/Tool"
 import type * as Toolkit from "@effect/ai/Toolkit"
 import * as Schema from "effect/Schema"
 import { type DeepPartial, deepPartial } from "../types"
-
-export type JSONValue = string | number | boolean | JSONObject | JSONArray
-
-export interface JSONObject {
-	[x: string]: JSONValue
-}
-
-export interface JSONArray extends Array<JSONValue> {}
-
-export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
-	Schema.String,
-	Schema.Number,
-	Schema.Boolean,
-	Schema.mutable(Schema.Record({ key: Schema.String, value: Schema.suspend(() => JSONValue) })),
-	Schema.mutable(Schema.Array(Schema.suspend(() => JSONValue))),
-)
-
-export const ProviderMetadata = Schema.Record({
-	key: Schema.String,
-	value: Schema.Record({
-		key: Schema.String,
-		value: JSONValue,
-	}),
-})
-
-export type ProviderMetadata = typeof ProviderMetadata.Type
-export type ProviderMetadataEncoded = typeof ProviderMetadata.Encoded
+import { ProviderMetadata } from "./provider-metadata"
 
 export const UIStepStartPart = Schema.Struct({
 	type: Schema.Literal("step-start"),
@@ -97,9 +71,9 @@ export interface UIDataPart<Name extends string, Data> {
 	readonly data: Data
 }
 
-type UIDataParts<Data extends Record<string, unknown>> = {
-	[Name in keyof Data & string]: UIDataPart<Name, Data[Name]>
-}[keyof Data & string]
+export type UIDataParts<Data extends Record<string, unknown>> = {
+	[Name in keyof Data]: Name extends string ? UIDataPart<Name, Data[Name]> : never
+}[keyof Data]
 
 export interface UIDataPartEncoded<Name extends string, DataEncoded> {
 	readonly type: `data-${Name}`
@@ -107,11 +81,11 @@ export interface UIDataPartEncoded<Name extends string, DataEncoded> {
 	readonly data: DataEncoded
 }
 
-type UIDataPartsEncoded<DataEncoded extends Record<string, unknown>> = {
-	[Name in keyof DataEncoded & string]: UIDataPart<Name, DataEncoded[Name]>
-}[keyof DataEncoded & string]
+export type UIDataPartsEncoded<DataEncoded extends Record<string, unknown>> = {
+	[Name in keyof DataEncoded]: Name extends string ? UIDataPart<Name, DataEncoded[Name]> : never
+}[keyof DataEncoded]
 
-export const UIDataPart = <Name extends string, Data, DataEncoded>(
+export const UIDataPart = <const Name extends string, Data, DataEncoded>(
 	name: Name,
 	data: Schema.Schema<Data, DataEncoded>,
 ): Schema.Schema<UIDataPart<Name, Data>, UIDataPartEncoded<Name, DataEncoded>> =>
@@ -280,28 +254,38 @@ export interface UIToolOutputErrorPartEncoded<Name extends string, InputEncoded>
 }
 
 export type UIToolParts<Tools extends Record<string, Tool.Any>> = {
-	[Name in keyof Tools & string]:
-		| UIToolInputStreamingPart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
-		| UIToolInputAvailablePart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
-		| UIToolOutputErrorPart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
-		| UIToolOutputAvailablePart<
-				Tool.Name<Tools[Name]>,
-				Tool.Parameters<Tools[Name]>,
-				Tool.Success<Tools[Name]>
-		  >
-}[keyof Tools & string]
+	[Name in keyof Tools]: Name extends string
+		?
+				| UIToolInputStreamingPart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
+				| UIToolInputAvailablePart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
+				| UIToolOutputErrorPart<Tool.Name<Tools[Name]>, Tool.Parameters<Tools[Name]>>
+				| UIToolOutputAvailablePart<
+						Tool.Name<Tools[Name]>,
+						Tool.Parameters<Tools[Name]>,
+						Tool.Success<Tools[Name]>
+				  >
+		: never
+}[keyof Tools]
 
 export type UIToolPartsEncoded<Tools extends Record<string, Tool.Any>> = {
-	[Name in keyof Tools & string]:
-		| UIToolInputStreamingPartEncoded<Tool.Name<Tools[Name]>, Tool.ParametersEncoded<Tools[Name]>>
-		| UIToolInputAvailablePartEncoded<Tool.Name<Tools[Name]>, Tool.ParametersEncoded<Tools[Name]>>
-		| UIToolOutputErrorPartEncoded<Tool.Name<Tools[Name]>, Tool.ParametersEncoded<Tools[Name]>>
-		| UIToolOutputAvailablePartEncoded<
-				Tool.Name<Tools[Name]>,
-				Tool.ParametersEncoded<Tools[Name]>,
-				Tool.SuccessEncoded<Tools[Name]>
-		  >
-}[keyof Tools & string]
+	[Name in keyof Tools]: Name extends string
+		?
+				| UIToolInputStreamingPartEncoded<
+						Tool.Name<Tools[Name]>,
+						Tool.ParametersEncoded<Tools[Name]>
+				  >
+				| UIToolInputAvailablePartEncoded<
+						Tool.Name<Tools[Name]>,
+						Tool.ParametersEncoded<Tools[Name]>
+				  >
+				| UIToolOutputErrorPartEncoded<Tool.Name<Tools[Name]>, Tool.ParametersEncoded<Tools[Name]>>
+				| UIToolOutputAvailablePartEncoded<
+						Tool.Name<Tools[Name]>,
+						Tool.ParametersEncoded<Tools[Name]>,
+						Tool.SuccessEncoded<Tools[Name]>
+				  >
+		: never
+}[keyof Tools]
 
 export const UIToolOutputErrorPart = <T extends Tool.Any>(
 	tool: T,
@@ -418,9 +402,9 @@ export type UIMessagePartEncoded<
 	| UIToolPartsEncoded<Tools>
 	| UIDynamicToolPartsEncoded
 
-export interface UIMessage<
+export interface TypeSchema<
 	Metadata,
-	Data extends Record<string, unknown>,
+	Data extends Record<string, any>,
 	Tools extends Record<string, Tool.Any>,
 > {
 	readonly id: string
@@ -429,7 +413,7 @@ export interface UIMessage<
 	readonly parts: Array<UIMessagePart<Data, Tools>>
 }
 
-export interface UIMessageEncoded<
+export interface EncodedSchema<
 	MetadataEncoded,
 	DataEncoded extends Record<string, unknown>,
 	Tools extends Record<string, Tool.Any>,
@@ -440,27 +424,95 @@ export interface UIMessageEncoded<
 	readonly parts: Array<UIMessagePartEncoded<DataEncoded, Tools>>
 }
 
-export const UIMessage = <
-	MetadataSchema extends Schema.Schema.Any = typeof Schema.Void,
-	DataFields extends Schema.Struct.Fields = {},
+export type MetadataSchema<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? _Metadata
+	: never
+
+export type Metadata<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? _Metadata["Type"]
+	: never
+
+export type MetadataEncoded<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? _Metadata["Encoded"]
+	: never
+
+export type DataSchema<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? _Data
+	: never
+
+export type Data<Message> = Message extends UIMessage<infer _Metadata, infer _Data, infer _Tools>
+	? Schema.Struct<_Data>["Type"]
+	: never
+
+export type DataParts<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? Schema.Simplify<UIDataParts<Data<Message>>>
+	: never
+
+export type DataEncoded<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? Schema.Struct<_Data>["Encoded"]
+	: never
+
+export type DataPartsEncoded<Message> = Message extends UIMessage<
+	infer _Metadata,
+	infer _Data,
+	infer _Tools
+>
+	? Schema.Simplify<UIDataPartsEncoded<DataEncoded<Message>>>
+	: never
+
+export type Tools<Message> = Message extends UIMessage<infer _Metadata, infer _Data, infer _Tools>
+	? _Tools
+	: never
+
+export interface UIMessage<
+	Metadata extends Schema.Schema.Any,
+	Data extends Schema.Struct.Fields,
+	Tools extends Record<string, Tool.Any>,
+> extends Schema.Schema<
+		TypeSchema<Metadata["Type"], Schema.Struct<Data>["Type"], Tools>,
+		EncodedSchema<Metadata["Encoded"], Schema.Struct<Data>["Encoded"], Tools>,
+		Tool.Requirements<Tools[keyof Tools]>
+	> {
+	readonly metadata: Metadata
+	readonly data: Data
+	readonly toolkit: Toolkit.Toolkit<Tools> | undefined
+}
+
+export type Any = UIMessage<any, any, any>
+
+export const make = <
+	Metadata extends Schema.Schema.Any = typeof Schema.Void,
+	Data extends Schema.Struct.Fields = {},
 	Tools extends Record<string, Tool.Any> = {},
 >(options?: {
-	readonly metadata?: MetadataSchema | undefined
-	readonly data?: DataFields | undefined
+	readonly metadata?: Metadata | undefined
+	readonly data?: Data | undefined
 	readonly toolkit?: Toolkit.Toolkit<Tools>
-}): Schema.Schema<
-	UIMessage<
-		Schema.Schema.Type<MetadataSchema>,
-		Schema.Schema.Type<Schema.Struct<DataFields>>,
-		Tools
-	>,
-	UIMessageEncoded<
-		Schema.Schema.Encoded<MetadataSchema>,
-		Schema.Schema.Encoded<Schema.Struct<DataFields>>,
-		Tools
-	>,
-	Tool.Requirements<Tools[keyof Tools]>
-> => {
+}): UIMessage<Metadata, Data, Tools> => {
 	const metadata = options?.metadata ?? Schema.Void
 	const data = options?.data
 	const tools = options?.toolkit?.tools
@@ -493,10 +545,17 @@ export const UIMessage = <
 		}
 	}
 
-	return Schema.Struct({
-		id: Schema.String,
-		role: Schema.Literal("system", "user", "assistant"),
-		metadata: Schema.optional(metadata),
-		parts: Schema.Array(Schema.Union(...members)),
-	}) as any
+	return Object.assign(
+		Schema.Struct({
+			id: Schema.String,
+			role: Schema.Literal("system", "user", "assistant"),
+			metadata: Schema.optional(metadata),
+			parts: Schema.Array(Schema.Union(...members)),
+		}),
+		{
+			metadata,
+			data,
+			toolkit: options?.toolkit,
+		},
+	) as any
 }

@@ -10,14 +10,16 @@ import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Config from "effect/Config"
+import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import * as Stream from "effect/Stream"
-import { promptFromUIMessages, toUIMessageStream } from "@/lib/ai"
 import { DadJokeTools, DadJokeToolsLayer } from "@/lib/ai/tools/dad-joke"
+import { createUIMessageStream } from "@/lib/ai/ui-message/create-ui-message-stream"
+import { promptFromUIMessages } from "@/lib/ai/ui-message/to-ui-message-stream"
+import * as UIMessage from "@/lib/domain/ui-message"
 import { toServerSentEventStream } from "@/lib/sse"
-import { UIMessage } from "@/lib/ui-message"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
 
 const SYSTEM_PROMPT = `You are a chatbot who always speaks as a stereotypical 
@@ -96,7 +98,7 @@ const MainLayer = Layer.mergeAll(OpenAiClientLayer, PersistenceLayer, DadJokeToo
 )
 
 // Create a schema for the type of `UIMessage`s that the chat endpoint expects.
-const ChatUIMessage = UIMessage({
+const ChatUIMessage = UIMessage.make({
 	toolkit: DadJokeTools,
 	data: {
 		notification: Schema.Struct({
@@ -128,7 +130,7 @@ const ChatUIMessage = UIMessage({
 // Effect<HttpServerResponse, E, HttpServerRequest>
 // ```
 //
-const App: HttpApp.Default = Effect.gen(function* () {
+const App = Effect.gen(function* () {
 	// Extract the chat persistence service from the Effect environment
 	const persistence = yield* Chat.Persistence
 
@@ -159,27 +161,49 @@ const App: HttpApp.Default = Effect.gen(function* () {
 	// Create a stream that will issue a request to the large language model
 	// provider and stream back response parts. Also inject the model that we
 	// want to use here (though it could be done at any point).
-	const stream = chat
-		.streamText({
-			prompt,
-			toolkit: DadJokeTools,
-		})
-		.pipe(Stream.provideSomeLayer(model))
+	// const stream = chat
+	// 	.streamText({
+	// 		prompt,
+	// 		toolkit: DadJokeTools,
+	// 	})
+	// 	.pipe(Stream.provideSomeLayer(model))
+	//
+	// const sseStream = stream.pipe(
+	// 	// Convert the stream response parts into `UIMessage` parts. Specifying
+	// 	// the previous chat history will ensure that the correct message
+	// 	// identifier is returned to the client to support persistence.
+	// 	toUIMessageStream(ChatUIMessage, {
+	// 		history: chat.history,
+	// 	}),
+	//
+	// 	// Convert the `UIMessage` stream into a server-sent-event (SSE) stream.
+	// 	// The provided schema will be used to safely encode the elements of the
+	// 	// stream.
+	// 	//
+	// 	// **NOTE**: For now, we are using `Schema.Any` until we finish support
+	// 	// for serialization of `UIMessage`s via Effect Schema.
+	// 	toServerSentEventStream(Schema.Any),
+	// )
+
+	const stream = yield* createUIMessageStream(ChatUIMessage, {
+		history: chat.history,
+		execute: Effect.fnUntraced(function* ({ mailbox, mergeStream }) {
+			yield* mailbox.offer({
+				type: "data-notification",
+				data: { level: "info", message: "hi" },
+			})
+
+			yield* mergeStream(
+				chat.streamText({
+					prompt,
+					toolkit: DadJokeTools,
+				}),
+			)
+		}),
+	}).pipe(Effect.provide(model))
 
 	const sseStream = stream.pipe(
-		// Convert the stream response parts into `UIMessage` parts. Specifying
-		// the previous chat history will ensure that the correct message
-		// identifier is returned to the client to support persistence.
-		toUIMessageStream({
-			history: chat.history,
-		}),
-
-		// Convert the `UIMessage` stream into a server-sent-event (SSE) stream.
-		// The provided schema will be used to safely encode the elements of the
-		// stream.
-		//
-		// **NOTE**: For now, we are using `Schema.Any` until we finish support
-		// for serialization of `UIMessage`s via Effect Schema.
+		Stream.tap((part) => Console.dir(part, { depth: null, colors: true })),
 		toServerSentEventStream(Schema.Any),
 	)
 
@@ -188,15 +212,13 @@ const App: HttpApp.Default = Effect.gen(function* () {
 		contentType: "text/event-stream",
 	})
 }).pipe(
-	// Provide the OpenAI client and persistence dependencies to our app
-	Effect.provide(MainLayer),
 	// TODO: implement a proper error domain for our route handler
 	Effect.tapErrorCause(Effect.logError),
 	Effect.orDie,
 )
 
 // Convert our `HttpApp` into a standard web request handler
-const handler = HttpApp.toWebHandler(App)
+const { handler } = HttpApp.toWebHandlerLayer(App, MainLayer)
 
 export const Route = createFileRoute("/api/chat")({
 	server: {

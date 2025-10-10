@@ -1,10 +1,25 @@
-import { type AiError, Chat, Prompt, type Response, type Tool } from "@effect/ai"
-import type { JSONValue, ProviderMetadata, UIDataTypes, UIMessage, UIMessageChunk } from "ai"
-import { Cause, Effect, Encoding, Predicate, Ref, Stream } from "effect"
-import { dual } from "effect/Function"
+import type * as AiError from "@effect/ai/AiError"
+import * as Chat from "@effect/ai/Chat"
+import * as Prompt from "@effect/ai/Prompt"
+import type * as Response from "@effect/ai/Response"
+import type * as Tool from "@effect/ai/Tool"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Encoding from "effect/Encoding"
+import { dual, identity } from "effect/Function"
+import * as Predicate from "effect/Predicate"
+import * as Ref from "effect/Ref"
+import * as Schema from "effect/Schema"
+import * as Stream from "effect/Stream"
 import type { Mutable, NoExcessProperties } from "effect/Types"
+import type { JSONValue } from "@/lib/domain/json-value"
+import type { ProviderMetadata } from "@/lib/domain/provider-metadata"
+import type * as UIMessage from "@/lib/domain/ui-message"
+import * as UIMessageChunk from "@/lib/domain/ui-message-chunk"
 
-export const promptFromUIMessages = (uiMessages: ReadonlyArray<UIMessage>): Prompt.Prompt => {
+export const promptFromUIMessages = (
+	uiMessages: ReadonlyArray<UIMessage.Any["Encoded"]>,
+): Prompt.Prompt => {
 	const messages: Array<Prompt.Message> = []
 	for (const uiMessage of uiMessages) {
 		switch (uiMessage.role) {
@@ -96,42 +111,45 @@ export type ToUIMessageStreamOptions = {
 	readonly history?: Prompt.Prompt | Ref.Ref<Prompt.Prompt> | undefined
 	readonly sendReasoning?: boolean | undefined
 	readonly sendSources?: boolean | undefined
+	readonly disableValidation?: boolean | undefined
 }
 
-export const toUIMessageStream = dual<
-	<Tools extends Record<string, Tool.Any>, Options extends ToUIMessageStreamOptions>(
+export const toUIMessageStream: {
+	<Message extends UIMessage.Any, Options extends ToUIMessageStreamOptions>(
+		message: Message,
 		options?: NoExcessProperties<ToUIMessageStreamOptions, Options> | undefined,
-	) => (
-		self: Stream.Stream<Response.StreamPart<Tools>, AiError.AiError>,
-	) => Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError>,
-	<Tools extends Record<string, Tool.Any>, Options extends ToUIMessageStreamOptions>(
-		self: Stream.Stream<Response.StreamPart<Tools>, AiError.AiError>,
+	): (
+		self: Stream.Stream<Response.StreamPart<UIMessage.Tools<Message>>, AiError.AiError>,
+	) => Stream.Stream<UIMessageChunk.FromUIMessage<Message>["Type"], AiError.AiError>
+	<Message extends UIMessage.Any, Options extends ToUIMessageStreamOptions>(
+		self: Stream.Stream<Response.StreamPart<UIMessage.Tools<Message>>, AiError.AiError>,
+		message: Message,
 		options?: NoExcessProperties<ToUIMessageStreamOptions, Options> | undefined,
-	) => Stream.Stream<UIMessageChunk<unknown, UIDataTypes>, AiError.AiError>
->(
-	(args) => Predicate.hasProperty(args, Stream.StreamTypeId),
-	Effect.fnUntraced(function* (
-		self,
-		{ history = undefined, sendReasoning = true, sendSources = false } = {},
+	): Stream.Stream<UIMessageChunk.FromUIMessage<Message>["Type"], AiError.AiError>
+} = dual(
+	(args) => Predicate.hasProperty(args[0], Stream.StreamTypeId),
+	Effect.fnUntraced(function* <Message extends UIMessage.Any>(
+		self: Stream.Stream<Response.StreamPart<UIMessage.Tools<Message>>, AiError.AiError>,
+		message: Message,
+		{
+			history = undefined,
+			sendReasoning = true,
+			sendSources = false,
+			disableValidation = false,
+		}: ToUIMessageStreamOptions = {},
 	) {
-		let messageId: string | undefined
-		if (Predicate.isNotUndefined(history)) {
-			const messages = Predicate.hasProperty(history, Ref.RefTypeId)
-				? (yield* Ref.get(history)).content
-				: history.content
-			const lastMessage = messages[messages.length - 1]
-			if (Predicate.isNotUndefined(lastMessage) && lastMessage.role === "assistant") {
-				messageId = lastMessage.options[Chat.Persistence.key]?.messageId as string | undefined
-			}
-		}
+		// If a message history was provided, attempt to retrieve the message
+		// persistence identifier
+		const messageId = Predicate.isNotUndefined(history) ? yield* getMessageId(history) : undefined
+		const ChunkSchema = UIMessageChunk.fromUIMessage(message)
 		return self.pipe(
-			Stream.mapConcat((part): ReadonlyArray<UIMessageChunk> => {
+			Stream.mapConcat((part): ReadonlyArray<(typeof ChunkSchema)["Type"]> => {
 				switch (part.type) {
 					case "response-metadata": {
 						return [
 							{
 								type: "start",
-								...(messageId !== undefined ? { messageId } : {}),
+								...withMessageId(messageId),
 							},
 							{ type: "start-step" },
 						]
@@ -315,15 +333,36 @@ export const toUIMessageStream = dual<
 					}
 				}
 			}),
+			disableValidation
+				? identity
+				: Stream.mapChunksEffect(Schema.validate(Schema.Chunk(ChunkSchema))),
 		)
 	}, Stream.unwrap),
 )
+
+const getMessageId = Effect.fnUntraced(function* (history: Prompt.Prompt | Ref.Ref<Prompt.Prompt>) {
+	// Retrieve the previously sent messages from the history
+	const messages = Predicate.hasProperty(history, Ref.RefTypeId)
+		? (yield* Ref.get(history)).content
+		: history.content
+	// Determine the most recent message exchanged
+	const lastMessage = messages[messages.length - 1]
+	// If the most recent message was an assistant message, try to extract the
+	// message persistence identifier
+	if (Predicate.isNotUndefined(lastMessage) && lastMessage.role === "assistant") {
+		return lastMessage.options[Chat.Persistence.key]?.messageId as string | undefined
+	}
+	return undefined
+})
+
+const withMessageId = (messageId: string | undefined) =>
+	Predicate.isNotUndefined(messageId) ? { messageId } : {}
 
 const withProviderExecuted = (
 	part:
 		| Response.ToolParamsStartPart
 		| Response.ToolCallPart<string, any>
-		| Response.ToolResultPart<string, any>,
+		| Response.ToolResultPart<string, any, any>,
 ): { readonly providerExecuted: boolean } | undefined =>
 	Predicate.isNotUndefined(part.providerExecuted)
 		? { providerExecuted: part.providerExecuted }

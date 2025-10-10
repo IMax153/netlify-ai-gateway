@@ -17,3 +17,5 @@ dist
 # Persisted State (Development)
 chats
 
+
+.env.local

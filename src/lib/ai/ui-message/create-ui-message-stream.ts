@@ -195,7 +195,10 @@ export const createUIMessageStream: <Message extends UIMessage.Any, E, R>(
 		)
 	})
 
-	yield* Effect.forkScoped(options.execute({ mailbox, mergeStream }))
+	yield* options.execute({ mailbox, mergeStream }).pipe(
+		Effect.onExit(() => mailbox.end),
+		Effect.forkScoped,
+	)
 
 	return Mailbox.toStream(mailbox)
 })

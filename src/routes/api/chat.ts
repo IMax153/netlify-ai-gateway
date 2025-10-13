@@ -149,6 +149,7 @@ const App = Effect.gen(function* () {
 	)
 
 	// Setup the OpenAI language model to use for the request to the model
+	// TODO: Make the model type-safe
 	const model = yield* OpenAiLanguageModel.model(selectedChatModel)
 
 	// Get or create a new persistence store for the requested chat
@@ -158,11 +159,12 @@ const App = Effect.gen(function* () {
 	const history = yield* chat.history
 
 	// Construct a prompt from the user message sent by the client
-	const prompt = promptFromUIMessages([message])
+	let prompt = promptFromUIMessages([message])
 
 	// If this is the first message in the chat, set the system prompt
 	if (history.content.length === 0) {
-		Prompt.setSystem(prompt, SYSTEM_PROMPT)
+		// NOTE: Is there a TS lint for discardin a value?
+		prompt = Prompt.setSystem(prompt, SYSTEM_PROMPT)
 	}
 
 	// Create a stream of UI messages to send back to the client

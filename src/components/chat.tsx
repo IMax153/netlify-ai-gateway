@@ -50,13 +50,14 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		currentModelIdRef.current = currentModelId
 	}, [currentModelId])
 
-	const { messages, sendMessage, status, regenerate } = useChat<ChatUIMessage>({
+	const { messages, sendMessage, status, regenerate, stop } = useChat<ChatUIMessage>({
 		experimental_throttle: 50,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
 			prepareSendMessagesRequest(request) {
 				return {
 					body: {
+						// TODO: Use the api/chat.ts Schema for this structure
 						id: request.id,
 						message: request.messages.at(-1),
 						selectedChatModel: currentModelIdRef.current,
@@ -68,6 +69,11 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	})
 
 	const handleSubmit = (message: PromptInputMessage) => {
+		if (status === "submitted" || status === "streaming") {
+			stop()
+			return
+		}
+
 		const hasText = Boolean(message.text)
 		const hasAttachments = Boolean(message.files?.length)
 

@@ -60,5 +60,8 @@
     "use-stick-to-bottom": "^1.1.1",
     "vite": "^7.1.10",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "dependencies": {
+    "motion": "^12.23.24"
   }
 }

@@ -9,9 +9,9 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
 	return (
-		<div className="h-screen pt-14">
-			<div className="flex justify-center items-center p-8">
-				<div className="w-full max-w-2xl text-center space-y-8">
+		<div className="min-h-screen pt-14">
+			<div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)] p-8">
+				<div className="w-full max-w-3xl text-center space-y-16">
 					<Hero />
 					<Features />
 					<SamplePrompts />
@@ -23,10 +23,14 @@ function RouteComponent() {
 
 function Hero() {
 	return (
-		<div className="space-y-4">
-			<div className="text-6xl mb-4 hover:scale-110 transition-transform cursor-default">👨‍💼</div>
-			<h1 className="text-4xl font-bold text-balance">Welcome to Dadbot</h1>
-			<p className="text-lg text-muted-foreground text-balance">
+		<div className="space-y-6">
+			<div className="text-7xl md:text-8xl mb-6 hover:scale-110 transition-transform cursor-default">
+				👨‍💼
+			</div>
+			<h1 className="text-5xl md:text-6xl font-bold text-balance tracking-tight">
+				Welcome to Dadbot
+			</h1>
+			<p className="text-lg md:text-xl text-muted-foreground text-balance max-w-2xl mx-auto leading-relaxed">
 				The most groan-worthy AI chat bot on the internet. I'm not just artificially intelligent -
 				I'm
 				<span className="font-semibold text-primary"> artificially hilarious</span>! Prepare
@@ -77,14 +81,17 @@ const FEATURES = [
 
 function Features() {
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 			{FEATURES.map(({ heading, subheading, icon: Icon }) => (
-				<Card key={heading} className="p-4">
-					<CardContent className="flex items-center gap-3 p-0">
+				<Card
+					key={heading}
+					className="p-5 hover:shadow-md transition-all hover:border-primary/20 cursor-default"
+				>
+					<CardContent className="flex items-center gap-4 p-0">
 						<Icon />
 						<div className="text-left">
-							<h3 className="font-semibold">{heading}</h3>
-							<p className="text-sm text-muted-foreground">{subheading}</p>
+							<h3 className="font-semibold text-base">{heading}</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed">{subheading}</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -104,14 +111,14 @@ const SAMPLE_PROMPTS = [
 
 function SamplePrompts() {
 	return (
-		<div className="space-y-4">
-			<h3 className="text-lg font-semibold">Ask me something - I'm all ears 🌽:</h3>
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+		<div className="space-y-6">
+			<h3 className="text-xl md:text-2xl font-semibold">Ask me something - I'm all ears 🌽</h3>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				{SAMPLE_PROMPTS.map((prompt) => (
 					<Button
 						key={prompt}
 						variant="outline"
-						className="h-auto p-3 bg-card text-center hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
+						className="h-auto py-4 px-4 text-center cursor-pointer text-base"
 						asChild
 					>
 						<Link to="/chat" search={{ prompt }}>

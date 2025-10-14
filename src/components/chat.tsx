@@ -32,6 +32,7 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import { Response } from "@/components/ai-elements/response"
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
 import { ToolCall } from "@/components/tool-call"
+import { DadAvatar } from "@/components/dad-avatar"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
 
 const models = [
@@ -44,7 +45,7 @@ const chatItemAnimation = {
 	animate: { opacity: 1, y: 0, filter: "blur(0px)" },
 	exit: { opacity: 0, y: -20, filter: "blur(4px)" },
 	transition: { type: "spring", visualDuration: 0.4, bounce: 0 },
-}
+} as const
 
 export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
 	const [input, setInput] = React.useState(initialPrompt)
@@ -120,10 +121,10 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	}
 
 	return (
-		<div className="max-w-screen-md mx-auto p-6 pt-20 relative size-full h-screen">
-			<div className="flex flex-col h-full">
+		<div className="flex flex-col h-screen pt-14">
+			<div className="flex-1 overflow-hidden">
 				<Conversation className="h-full">
-					<ConversationContent>
+					<ConversationContent className="max-w-screen-md mx-auto px-6 py-6">
 						<AnimatePresence mode="popLayout" initial={false}>
 							{messages.map((message, index) => (
 								<div key={`${message.id}-${index}`}>
@@ -163,14 +164,19 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 																<MessageContent>
 																	<Response>{part.text}</Response>
 																</MessageContent>
-																<MessageAvatar
-																	className="h-10 w-10"
-																	src={
-																		message.role === "user"
-																			? "https://github.com/IMax153.png"
-																			: "https://github.com/Effect-TS.png"
-																	}
-																/>
+																{message.role === "user" ? (
+																	<MessageAvatar
+																		className="h-10 w-10"
+																		src="https://github.com/IMax153.png"
+																	/>
+																) : (
+																	<DadAvatar
+																		className="h-20"
+																		thinking={
+																			status === "streaming" && message.id === messages.at(-1)?.id
+																		}
+																	/>
+																)}
 															</Message>
 														</motion.div>
 														{message.role === "assistant" && i === messages.length - 1 && (
@@ -235,8 +241,15 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>
+			</div>
 
-				<PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
+			<div className="bg-background">
+				<PromptInput
+					onSubmit={handleSubmit}
+					className="max-w-screen-md mx-auto mb-4"
+					globalDrop
+					multiple
+				>
 					<PromptInputBody>
 						<PromptInputTextarea
 							autoFocus

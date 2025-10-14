@@ -30,9 +30,8 @@ import {
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning"
 import { Response } from "@/components/ai-elements/response"
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool"
+import { ToolCall } from "@/components/tool-call"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
-import type * as UIMessage from "@/lib/domain/ui-message"
 
 const models = [
 	{ value: "gpt-4o-mini", name: "GPT-4o Mini" },
@@ -67,6 +66,15 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			},
 		}),
 	})
+
+	// if the last message parts contains a tool-call where the state is input-available, log it!
+	const lastMessage = messages.at(-1)
+	if (lastMessage?.role === "assistant") {
+		const toolCallParts = lastMessage.parts.filter(
+			(part) => part.type === "tool-GetDadJoke" && part.state === "input-available",
+		)
+		console.dir(toolCallParts, { depth: null })
+	}
 
 	const handleSubmit = (message: PromptInputMessage) => {
 		if (status === "submitted" || status === "streaming") {
@@ -211,23 +219,5 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 				</PromptInput>
 			</div>
 		</div>
-	)
-}
-
-function ToolCall({
-	part,
-}: {
-	readonly part: UIMessage.UIToolParts<UIMessage.Tools<typeof ChatUIMessage>>
-}) {
-	return (
-		<Tool defaultOpen={false}>
-			<ToolHeader type={part.type.replace("tool-", "")} state={part.state} />
-			<ToolContent>
-				<ToolInput input={part.input} />
-				{part.state === "output-available" && (
-					<ToolOutput errorText={undefined} output={part.output as any} />
-				)}
-			</ToolContent>
-		</Tool>
 	)
 }

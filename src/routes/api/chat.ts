@@ -20,6 +20,7 @@ import {
 import { promptFromUIMessages } from "@/lib/ai/ui-message/prompt-from-ui-messages"
 import * as UIMessage from "@/lib/domain/ui-message"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
+import { Console, Stream } from "effect"
 
 const SYSTEM_PROMPT = `You are a chatbot who always speaks as a stereotypical 
 dad, full of groan-inducing puns, cheesy one-liners, and dorky humor. Your 
@@ -180,10 +181,12 @@ const App = Effect.gen(function* () {
 			let turn = 0
 			// Get the initial response from the language model
 			let response = yield* mergeStream(
-				chat.streamText({
-					prompt,
-					toolkit: DadJokeTools,
-				}),
+				chat
+					.streamText({
+						prompt,
+						toolkit: DadJokeTools,
+					})
+					.pipe(Stream.rechunk(1)),
 			)
 			while (response.finishReason === "tool-calls" && turn < 5) {
 				response = yield* mergeStream(
@@ -217,3 +220,188 @@ export const Route = createFileRoute("/api/chat")({
 		},
 	},
 })
+
+// {
+//   type: 'response-metadata',
+//   id: {
+//     _id: 'Option',
+//     _tag: 'Some',
+//     value: 'resp_0ccde62eac66012b0068ed69c7f5448194a38cd56d1eee0fe4'
+//   },
+//   modelId: { _id: 'Option', _tag: 'Some', value: 'gpt-4o-mini-2024-07-18' },
+//   timestamp: { _id: 'Option', _tag: 'Some', value: '2025-10-13T21:06:16.000Z' },
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-start',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   name: 'GetDadJoke',
+//   providerExecuted: false,
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: '{"',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: 'search',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: 'Term',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: '":"',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: 'program',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: 'ming',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-delta',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   delta: '"}',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-params-end',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   metadata: {},
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   type: 'tool-call',
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   name: 'GetDadJoke',
+//   params: { searchTerm: 'programming' },
+//   providerExecuted: false,
+//   metadata: {
+//     openai: { itemId: 'fc_0ccde62eac66012b0068ed69c8d8808194980452cd3b57b9d2' }
+//   },
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+// {
+//   id: 'call_dWp6HQElRfmYLcAw1UvKsCLw',
+//   name: 'GetDadJoke',
+//   result: "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later.",
+//   encodedResult: "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later.",
+//   isFailure: false,
+//   providerExecuted: false,
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part',
+//   type: 'tool-result',
+//   metadata: {}
+// }
+// {
+//   type: 'finish',
+//   reason: 'tool-calls',
+//   usage: Usage {
+//     inputTokens: 411,
+//     outputTokens: 19,
+//     totalTokens: 430,
+//     reasoningTokens: 0,
+//     cachedInputTokens: 0
+//   },
+//   metadata: { openai: { serviceTier: 'default' } },
+//   '~effect/ai/Content/Part': '~effect/ai/Content/Part'
+// }
+
+// FoundComponent option was not configured, nor was a router level defaultNotFoundComponent configured. Consider configuring at least one of these to avoid TanStack Router's overly generic defaultNotFoundComponent (<div>Not Found<div>)
+// { type: 'data-notification', data: { level: 'info', message: 'hi' } }
+// { type: 'start' }
+// { type: 'start-step' }
+// {
+//   type: 'tool-input-start',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   toolName: 'GetDadJoke',
+//   providerExecuted: false
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: '{"'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: 'search'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: 'Term'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: '":"'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: 'program'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: 'ming'
+// }
+// {
+//   type: 'tool-input-delta',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   inputTextDelta: '"}'
+// }
+// {
+//   type: 'tool-input-available',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   toolName: 'GetDadJoke',
+//   input: { searchTerm: 'programming' },
+//   providerExecuted: false,
+//   providerMetadata: {
+//     openai: { itemId: 'fc_0e7f288f2c35e2b90068ed6a6101d081959c47f97f020c61be' }
+//   }
+// }
+// {
+//   type: 'tool-output-available',
+//   toolCallId: 'call_JJQQwU69rjPfqbtpRRBiuiNe',
+//   output: "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later.",
+//   providerExecuted: false
+// }
+// { type: 'finish-step' }
+// { type: 'finish' }
+// { type: 'start' }
+// { type: 'start-step' }
+// {
+//   type: 'text-start',
+//   id: 'msg_0d8686d84547c0d80068ed6a6435588193b9905a98905c28fa',
+//   providerMetadata: {
+//     openai: {
+//       itemId: 'msg_0d8686d84547c0d80068ed6a6435588193b9905a98905c28fa'
+//     }
+//   }

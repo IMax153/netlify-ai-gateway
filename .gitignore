@@ -10,7 +10,7 @@
 # NodeJS
 node_modules
 
-# Tanstack 
+# Tanstack
 .tanstack
 dist
 

@@ -1,0 +1,7 @@
+{
+	"plugins": ["react-cosmos-plugin-vite"],
+	"staticPath": "public",
+	"vite": {
+		"configPath": "cosmos.vite.config.ts"
+	}
+}

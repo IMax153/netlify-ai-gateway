@@ -1,10 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { cn } from "@/lib/utils"
-import type { ToolUIPart } from "ai"
 import {
 	CheckCircleIcon,
 	ChevronDownIcon,
@@ -13,7 +9,14 @@ import {
 	WrenchIcon,
 	XCircleIcon,
 } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import type { Transition } from "motion/react"
 import type { ComponentProps, ReactNode } from "react"
+import useMeasure from "react-use-measure"
+import { Badge } from "@/components/ui/badge"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { cn } from "@/lib/utils"
+import type { ToolUIPart } from "ai"
 import { CodeBlock } from "./code-block"
 
 export type ToolProps = ComponentProps<typeof Collapsible>
@@ -28,42 +31,124 @@ export type ToolHeaderProps = {
 	className?: string
 }
 
-const getStatusBadge = (status: ToolUIPart["state"]) => {
-	const labels = {
-		"input-streaming": "Pending",
-		"input-available": "Running",
-		"output-available": "Completed",
-		"output-error": "Error",
-	} as const
+const STATUS_META: Record<
+	ToolUIPart["state"],
+	{
+		label: string
+		Icon: typeof CircleIcon
+		iconClassName?: string
+	}
+> = {
+	"input-streaming": { label: "Pending", Icon: CircleIcon },
+	"input-available": { label: "Running", Icon: ClockIcon },
+	"output-available": {
+		label: "Completed",
+		Icon: CheckCircleIcon,
+		iconClassName: "text-green-600",
+	},
+	"output-error": { label: "Error", Icon: XCircleIcon, iconClassName: "text-red-600" },
+}
 
-	const icons = {
-		"input-streaming": <CircleIcon className="size-4" />,
-		"input-available": <ClockIcon className="size-4 animate-pulse" />,
-		"output-available": <CheckCircleIcon className="size-4 text-green-600" />,
-		"output-error": <XCircleIcon className="size-4 text-red-600" />,
-	} as const
+const HEADER_SPRING: Transition = {
+	type: "spring",
+	visualDuration: 0.3,
+	bounce: 0.0,
+}
+
+export const ToolHeader = ({ className, type, state, ...props }: ToolHeaderProps) => {
+	const isProcessing = state === "input-streaming" || state === "input-available"
 
 	return (
-		<Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
-			{icons[status]}
-			{labels[status]}
-		</Badge>
+		<CollapsibleTrigger
+			className={cn(
+				"relative flex w-full items-center justify-between gap-4 overflow-hidden p-3 cursor-pointer",
+				className,
+			)}
+			{...props}
+		>
+			<motion.span
+				className="pointer-events-none absolute inset-0 bg-primary/10"
+				initial={{ opacity: 0 }}
+				animate={isProcessing ? { opacity: [0.2, 0.55, 0.2] } : { opacity: 0 }}
+				transition={
+					isProcessing
+						? { repeat: Infinity, repeatType: "reverse", duration: 1.4, ease: "easeInOut" }
+						: { duration: 0.2, ease: "easeOut" }
+				}
+				aria-hidden="true"
+			/>
+			<div className="relative flex items-center gap-3">
+				<WrenchIcon className="size-4 text-muted-foreground" />
+				<span className="font-medium text-sm">{type}</span>
+				<AnimatedStatusBadge state={state} />
+			</div>
+			<ChevronDownIcon className="relative size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+		</CollapsibleTrigger>
 	)
 }
 
-export const ToolHeader = ({ className, type, state, ...props }: ToolHeaderProps) => (
-	<CollapsibleTrigger
-		className={cn("flex w-full items-center justify-between gap-4 p-3 cursor-pointer", className)}
-		{...props}
-	>
-		<div className="flex items-center gap-2">
-			<WrenchIcon className="size-4 text-muted-foreground" />
-			<span className="font-medium text-sm">{type}</span>
-			{getStatusBadge(state)}
-		</div>
-		<ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-	</CollapsibleTrigger>
-)
+const AnimatedStatusBadge = ({ state }: { readonly state: ToolUIPart["state"] }) => {
+	const { label, Icon, iconClassName } = STATUS_META[state]
+	const [ref, bounds] = useMeasure()
+
+	return (
+		<Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
+			<AnimatePresence initial={false} mode="popLayout">
+				<motion.span
+					key={`status-icon-${state}`}
+					className="flex items-center"
+					initial={{ opacity: 0, scale: 0.85, filter: "blur(2px)" }}
+					animate={{
+						opacity: 1,
+						scale: 1,
+						filter: "blur(0px)",
+						transition: HEADER_SPRING,
+					}}
+					exit={{
+						opacity: 0,
+						scale: 0.85,
+						filter: "blur(2px)",
+						transition: HEADER_SPRING,
+					}}
+				>
+					<Icon className={cn("size-4", iconClassName)} />
+				</motion.span>
+			</AnimatePresence>
+			<motion.div
+				animate={{ width: bounds.width > 0 ? bounds.width : "auto" }}
+				transition={HEADER_SPRING}
+				className="overflow-hidden"
+			>
+				<div ref={ref} className="w-fit">
+					<AnimatePresence mode="popLayout" initial={false}>
+						{label.split("").map((letter, index) => (
+							<motion.span
+								key={`${state}-${index}-${letter}`}
+								className="inline-block"
+								initial={{ opacity: 0, filter: "blur(2px)" }}
+								animate={{
+									opacity: 1,
+									filter: "blur(0px)",
+									transition: {
+										...HEADER_SPRING,
+										delay: index * 0.015,
+									},
+								}}
+								exit={{
+									opacity: 0,
+									filter: "blur(2px)",
+									transition: HEADER_SPRING,
+								}}
+							>
+								{letter === " " ? "\u00A0" : letter}
+							</motion.span>
+						))}
+					</AnimatePresence>
+				</div>
+			</motion.div>
+		</Badge>
+	)
+}
 
 export type ToolContentProps = ComponentProps<typeof CollapsibleContent>
 

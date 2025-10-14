@@ -17,5 +17,7 @@ dist
 # Persisted State (Development)
 chats
 
-
-.env.local
+# Environment Variables
+.env
+.env.*
+!.env.example

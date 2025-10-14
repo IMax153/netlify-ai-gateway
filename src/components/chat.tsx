@@ -41,6 +41,7 @@ const models = [
 export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
 	const [input, setInput] = React.useState(initialPrompt)
 	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
+	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
 	// Ensure we are never using a stale reference to the selected model when
 	// the request to the server is prepared / sent
@@ -48,6 +49,14 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	React.useEffect(() => {
 		currentModelIdRef.current = currentModelId
 	}, [currentModelId])
+
+	// Set cursor to end of text on mount if there's initial content
+	React.useEffect(() => {
+		if (textareaRef.current && initialPrompt) {
+			const length = initialPrompt.length
+			textareaRef.current.setSelectionRange(length, length)
+		}
+	}, [initialPrompt])
 
 	const { messages, sendMessage, status, regenerate, stop } = useChat<ChatUIMessage>({
 		experimental_throttle: 50,
@@ -188,7 +197,12 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 
 				<PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
 					<PromptInputBody>
-						<PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
+						<PromptInputTextarea
+							autoFocus
+							onChange={(e) => setInput(e.target.value)}
+							ref={textareaRef}
+							value={input}
+						/>
 					</PromptInputBody>
 					<PromptInputToolbar>
 						<PromptInputTools>

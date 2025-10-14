@@ -120,7 +120,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	}
 
 	return (
-		<div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
+		<div className="max-w-screen-md mx-auto p-6 pt-20 relative size-full h-screen">
 			<div className="flex flex-col h-full">
 				<Conversation className="h-full">
 					<ConversationContent>

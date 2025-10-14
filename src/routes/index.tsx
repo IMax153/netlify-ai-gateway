@@ -9,13 +9,7 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
 	return (
-		<div className="h-screen">
-			<div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-				<Button size="sm" className="text-sm cursor-pointer" asChild>
-					<Link to="/chat">Go to chat</Link>
-				</Button>
-			</div>
-
+		<div className="h-screen pt-14">
 			<div className="flex justify-center items-center p-8">
 				<div className="w-full max-w-2xl text-center space-y-8">
 					<Hero />

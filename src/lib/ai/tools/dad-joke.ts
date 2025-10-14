@@ -22,8 +22,7 @@ export const DadJokeToolsLayer = DadJokeTools.toLayer(
 	Effect.gen(function* () {
 		const icanhazdadjoke = yield* ICanHazDadJoke
 		return {
-			GetDadJoke: ({ searchTerm }) =>
-				icanhazdadjoke.search(searchTerm).pipe(Effect.delay("10 seconds")),
+			GetDadJoke: ({ searchTerm }) => icanhazdadjoke.search(searchTerm),
 		}
 	}),
 ).pipe(Layer.provide(ICanHazDadJoke.Default))

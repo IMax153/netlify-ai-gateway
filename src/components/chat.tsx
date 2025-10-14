@@ -1,6 +1,7 @@
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { CopyIcon, RefreshCcwIcon } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 import * as React from "react"
 import { Action, Actions } from "@/components/ai-elements/actions"
 import {
@@ -37,6 +38,13 @@ const models = [
 	{ value: "gpt-4o-mini", name: "GPT-4o Mini" },
 	{ value: "gpt-4o", name: "GPT-4o" },
 ]
+
+const chatItemAnimation = {
+	initial: { opacity: 0, y: 20, filter: "blur(4px)" },
+	animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+	exit: { opacity: 0, y: -20, filter: "blur(4px)" },
+	transition: { type: "spring", visualDuration: 0.4, bounce: 0 },
+}
 
 export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
 	const [input, setInput] = React.useState(initialPrompt)
@@ -116,80 +124,113 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			<div className="flex flex-col h-full">
 				<Conversation className="h-full">
 					<ConversationContent>
-						{messages.map((message, index) => (
-							<div key={`${message.id}-${index}`}>
-								{message.role === "assistant" &&
-									message.parts.filter((part) => part.type === "source-url").length > 0 && (
-										<Sources>
-											<SourcesTrigger
-												count={message.parts.filter((part) => part.type === "source-url").length}
-											/>
-											{message.parts
-												.filter((part) => part.type === "source-url")
-												.map((part, i) => (
-													<SourcesContent key={`${message.id}-${i}`}>
-														<Source key={`${message.id}-${i}`} href={part.url} title={part.url} />
-													</SourcesContent>
-												))}
-										</Sources>
-									)}
-								{message.parts.map((part, i) => {
-									switch (part.type) {
-										case "text":
-											return (
-												<React.Fragment key={`${message.id}-${i}`}>
-													<Message from={message.role}>
-														<MessageContent>
-															<Response>{part.text}</Response>
-														</MessageContent>
-														<MessageAvatar
-															className="h-10 w-10"
-															src={
-																message.role === "user"
-																	? "https://github.com/IMax153.png"
-																	: "https://github.com/Effect-TS.png"
-															}
-														/>
-													</Message>
-													{message.role === "assistant" && i === messages.length - 1 && (
-														<Actions className="mt-2">
-															<Action onClick={() => regenerate()} label="Retry">
-																<RefreshCcwIcon className="size-3" />
-															</Action>
-															<Action
-																onClick={() => navigator.clipboard.writeText(part.text)}
-																label="Copy"
+						<AnimatePresence mode="popLayout" initial={false}>
+							{messages.map((message, index) => (
+								<div key={`${message.id}-${index}`}>
+									{message.role === "assistant" &&
+										message.parts.filter((part) => part.type === "source-url").length > 0 && (
+											<motion.div {...chatItemAnimation}>
+												<Sources>
+													<SourcesTrigger
+														count={
+															message.parts.filter((part) => part.type === "source-url").length
+														}
+													/>
+													{message.parts
+														.filter((part) => part.type === "source-url")
+														.map((part, i) => (
+															<SourcesContent key={`${message.id}-${i}`}>
+																<Source
+																	key={`${message.id}-${i}`}
+																	href={part.url}
+																	title={part.url}
+																/>
+															</SourcesContent>
+														))}
+												</Sources>
+											</motion.div>
+										)}
+									{message.parts.map((part, i) => {
+										switch (part.type) {
+											case "text":
+												return (
+													<React.Fragment key={`${message.id}-${i}`}>
+														<motion.div
+															{...chatItemAnimation}
+															transition={{ ...chatItemAnimation.transition, delay: i * 0.05 }}
+														>
+															<Message from={message.role}>
+																<MessageContent>
+																	<Response>{part.text}</Response>
+																</MessageContent>
+																<MessageAvatar
+																	className="h-10 w-10"
+																	src={
+																		message.role === "user"
+																			? "https://github.com/IMax153.png"
+																			: "https://github.com/Effect-TS.png"
+																	}
+																/>
+															</Message>
+														</motion.div>
+														{message.role === "assistant" && i === messages.length - 1 && (
+															<motion.div
+																{...chatItemAnimation}
+																transition={{ ...chatItemAnimation.transition, delay: 0.1 }}
 															>
-																<CopyIcon className="size-3" />
-															</Action>
-														</Actions>
-													)}
-												</React.Fragment>
-											)
-										case "reasoning":
-											return (
-												<Reasoning
-													key={`${message.id}-${i}`}
-													className="w-full"
-													isStreaming={
-														status === "streaming" &&
-														i === message.parts.length - 1 &&
-														message.id === messages.at(-1)?.id
-													}
-												>
-													<ReasoningTrigger />
-													<ReasoningContent>{part.text}</ReasoningContent>
-												</Reasoning>
-											)
-										case "tool-GetDadJoke": {
-											return <ToolCall key={`${message.id}-${i}`} part={part} />
+																<Actions className="mt-2">
+																	<Action onClick={() => regenerate()} label="Retry">
+																		<RefreshCcwIcon className="size-3" />
+																	</Action>
+																	<Action
+																		onClick={() => navigator.clipboard.writeText(part.text)}
+																		label="Copy"
+																	>
+																		<CopyIcon className="size-3" />
+																	</Action>
+																</Actions>
+															</motion.div>
+														)}
+													</React.Fragment>
+												)
+											case "reasoning":
+												return (
+													<motion.div
+														key={`${message.id}-${i}`}
+														{...chatItemAnimation}
+														transition={{ ...chatItemAnimation.transition, delay: i * 0.05 }}
+													>
+														<Reasoning
+															className="w-full"
+															isStreaming={
+																status === "streaming" &&
+																i === message.parts.length - 1 &&
+																message.id === messages.at(-1)?.id
+															}
+														>
+															<ReasoningTrigger />
+															<ReasoningContent>{part.text}</ReasoningContent>
+														</Reasoning>
+													</motion.div>
+												)
+											case "tool-GetDadJoke": {
+												return (
+													<motion.div
+														key={`${message.id}-${i}`}
+														{...chatItemAnimation}
+														transition={{ ...chatItemAnimation.transition, delay: i * 0.05 }}
+													>
+														<ToolCall part={part} />
+													</motion.div>
+												)
+											}
+											default:
+												return null
 										}
-										default:
-											return null
-									}
-								})}
-							</div>
-						))}
+									})}
+								</div>
+							))}
+						</AnimatePresence>
 						{status === "submitted" && <Loader />}
 					</ConversationContent>
 					<ConversationScrollButton />

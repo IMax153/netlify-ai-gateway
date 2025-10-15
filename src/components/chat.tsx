@@ -223,18 +223,17 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 							))}
 						</AnimatePresence>
 						{status === "submitted" && <Loader />}
+						{messages.length > 0 && messages.at(-1)?.role === "assistant" && (
+							<div className="flex justify-center mt-4">
+								<DadAvatar
+									state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
+									className="h-20"
+								/>
+							</div>
+						)}
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>
-			</div>
-
-			<div className="bg-background pb-2">
-				<div className="max-w-screen-md mx-auto px-6 flex justify-center">
-					<DadAvatar
-						state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
-						className="h-20"
-					/>
-				</div>
 			</div>
 
 			<div className="bg-background">

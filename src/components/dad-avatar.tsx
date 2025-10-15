@@ -155,18 +155,11 @@ export const DadAvatar = ({ state = "idle", className }: DadAvatarProps) => {
 	}
 	const frames = getFrames(animationState)
 	return (
-		<div className="flex flex-col items-center justify-center">
-			<div>DAD STATE: {dadState}</div>
-			<div>ANIMATION STATE: {animationState}</div>
-			<div>FRAME INDEX: {frameIndex}</div>
-			<div>FRAMES: {frames.length}</div>
-			<img
-				src={frames[frameIndex]}
-				alt={`Dad ${animationState}`}
-				className={cn("h-24 w-auto", className)}
-				style={{ imageRendering: "crisp-edges" }}
-			/>
-			<div className="text-sm text-gray-500">{animationState}</div>
-		</div>
+		<img
+			src={frames[frameIndex]}
+			alt={`Dad ${animationState}`}
+			className={cn("h-24 w-auto", className)}
+			style={{ imageRendering: "crisp-edges" }}
+		/>
 	)
 }

@@ -3,13 +3,7 @@ import { Heart, MessageSquare, Users, Zap } from "lucide-react"
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import laugh1 from "@/assets/laugh-1.png"
-import laugh2 from "@/assets/laugh-2.png"
-import laugh3 from "@/assets/laugh-3.png"
-import laugh4 from "@/assets/laugh-4.png"
-import laugh5 from "@/assets/laugh-5.png"
-
-const laughFrames = [laugh1, laugh2, laugh3, laugh4, laugh5]
+import { useAvatarImagesPreloader } from "@/hooks/use-dad-images-preloader"
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
@@ -50,6 +44,8 @@ function Hero() {
 
 function LaughingDadAvatar() {
 	const [frameIndex, setFrameIndex] = React.useState(0)
+	const { dadImages } = useAvatarImagesPreloader()
+	const laughFrames = dadImages.laughing
 
 	React.useEffect(() => {
 		const interval = setInterval(() => {
@@ -57,7 +53,7 @@ function LaughingDadAvatar() {
 		}, 1000 / 6) // 6 FPS like the main DadAvatar component
 
 		return () => clearInterval(interval)
-	}, [])
+	}, [laughFrames.length])
 
 	return (
 		<img

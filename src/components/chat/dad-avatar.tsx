@@ -2,11 +2,11 @@
 
 import { motion } from "motion/react"
 import * as React from "react"
-import useMeasure, { type RectReadOnly } from "react-use-measure"
 import { createPortal } from "react-dom"
+import useMeasure, { type RectReadOnly } from "react-use-measure"
 import { DadAvatar } from "@/components/dad-avatar"
-import type { ChatStatus } from "./types"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
+import type { ChatStatus } from "./types"
 
 const DAD_AVATAR_HEIGHT = 80
 
@@ -17,7 +17,12 @@ export interface ChatDadAvatarProps {
 	readonly inputPanelTop: number
 }
 
-export function ChatDadAvatar({ status, isEmptyConversation, messages, inputPanelTop }: ChatDadAvatarProps) {
+export function ChatDadAvatar({
+	status,
+	isEmptyConversation,
+	messages,
+	inputPanelTop,
+}: ChatDadAvatarProps) {
 	const [anchorRef, anchorBounds, updateAnchorBounds] = useMeasure({
 		scroll: true,
 		offsetSize: true,
@@ -239,7 +244,10 @@ function DadAvatarPortal({ position, status, isReady, isEmptyConversation }: Dad
 				transformOrigin: "center center",
 			}}
 		>
-			<DadAvatar state={status === "streaming" || status === "submitted" ? "thinking" : "idle"} className="h-20 w-auto" />
+			<DadAvatar
+				state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
+				className="h-20 w-auto"
+			/>
 		</motion.div>,
 		document.body,
 	)

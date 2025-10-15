@@ -163,8 +163,10 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 																) : (
 																	<DadAvatar
 																		className="h-20"
-																		thinking={
+																		state={
 																			status === "streaming" && message.id === messages.at(-1)?.id
+																				? "thinking"
+																				: "idle"
 																		}
 																	/>
 																)}

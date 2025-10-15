@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Atom, Result, useAtom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Schedule, Stream } from "effect"

@@ -1,15 +1,18 @@
+"use client"
+
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { CopyIcon, RefreshCcwIcon } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import * as React from "react"
+import { createPortal } from "react-dom"
+import useMeasure from "react-use-measure"
 import { Action, Actions } from "@/components/ai-elements/actions"
 import {
 	Conversation,
 	ConversationContent,
 	ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import { Loader } from "@/components/ai-elements/loader"
 import { Message, MessageAvatar, MessageContent } from "@/components/ai-elements/message"
 import {
 	PromptInput,
@@ -51,6 +54,31 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	const [input, setInput] = React.useState(initialPrompt)
 	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+	const [targetRef, targetBounds, updateTargetBounds] = useMeasure({
+		scroll: true,
+		offsetSize: true,
+	})
+	const [viewportHeight, setViewportHeight] = React.useState<number | null>(() =>
+		typeof window === "undefined" ? null : window.innerHeight,
+	)
+
+	React.useEffect(() => {
+		if (typeof window === "undefined") {
+			return
+		}
+
+		const handleResize = () => {
+			setViewportHeight(window.innerHeight)
+			updateTargetBounds()
+		}
+
+		handleResize()
+
+		window.addEventListener("resize", handleResize)
+		return () => {
+			window.removeEventListener("resize", handleResize)
+		}
+	}, [updateTargetBounds])
 
 	// Ensure we are never using a stale reference to the selected model when
 	// the request to the server is prepared / sent
@@ -84,6 +112,11 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			},
 		}),
 	})
+	// Force remeasure when messages change to ensure dad avatar follows
+	React.useEffect(() => {
+		const rafId = requestAnimationFrame(updateTargetBounds)
+		return () => cancelAnimationFrame(rafId)
+	}, [messages.length, updateTargetBounds])
 
 	const handleSubmit = (message: PromptInputMessage) => {
 		if (status === "submitted" || status === "streaming") {
@@ -223,27 +256,48 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 							))}
 						</AnimatePresence>
 
-						<motion.div
-							className="flex justify-center"
-							animate={{
-								scale: messages.length === 0 ? 3 : 1,
-								y: messages.length === 0 ? "calc(50vh - 50% - 3.5rem)" : 0,
-							}}
-							initial={false}
-							transition={{
-								type: "spring",
-								stiffness: 200,
-								damping: 30,
-							}}
-							style={{
-								marginTop: messages.length === 0 ? 0 : "1rem",
-							}}
-						>
-							<DadAvatar
-								state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
-								className="h-20"
+						{/* Invisible placeholder that defines where dad should be */}
+						<div className={messages.length === 0 ? "flex justify-center" : "flex justify-start"}>
+							<div
+								ref={targetRef}
+								className="h-20 w-20 invisible pointer-events-none"
+								aria-hidden="true"
 							/>
-						</motion.div>
+						</div>
+
+						{/* Portal for dad avatar with smooth position animation */}
+							{typeof document !== "undefined" &&
+								targetBounds.width > 0 &&
+								createPortal(
+									<motion.div
+										key="dad-avatar-portal"
+										className="fixed pointer-events-none z-50"
+										animate={{
+											left: targetBounds.left,
+											top:
+												messages.length === 0 && viewportHeight !== null
+													? Math.max(0, (viewportHeight - targetBounds.height) / 2)
+													: targetBounds.top,
+											width: targetBounds.width,
+											height: targetBounds.height,
+											scale: messages.length === 0 ? 3 : 1,
+										}}
+										transition={{
+										type: "spring",
+										stiffness: 200,
+										damping: 30,
+									}}
+									style={{
+										transformOrigin: "center center",
+									}}
+								>
+									<DadAvatar
+										state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
+										className="h-20 w-20"
+									/>
+								</motion.div>,
+								document.body,
+							)}
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>

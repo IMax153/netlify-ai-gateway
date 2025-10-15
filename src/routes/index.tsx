@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Heart, MessageSquare, Users, Zap } from "lucide-react"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import laugh1 from "@/assets/laugh-1.png"
+import laugh2 from "@/assets/laugh-2.png"
+import laugh3 from "@/assets/laugh-3.png"
+import laugh4 from "@/assets/laugh-4.png"
+import laugh5 from "@/assets/laugh-5.png"
+
+const laughFrames = [laugh1, laugh2, laugh3, laugh4, laugh5]
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
@@ -9,15 +17,9 @@ export const Route = createFileRoute("/")({
 
 function RouteComponent() {
 	return (
-		<div className="h-screen">
-			<div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-				<Button size="sm" className="text-sm cursor-pointer" asChild>
-					<Link to="/chat">Go to chat</Link>
-				</Button>
-			</div>
-
-			<div className="flex justify-center items-center p-8">
-				<div className="w-full max-w-2xl text-center space-y-8">
+		<div className="min-h-screen pt-14">
+			<div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)] p-8">
+				<div className="w-full max-w-3xl text-center space-y-16">
 					<Hero />
 					<Features />
 					<SamplePrompts />
@@ -29,16 +31,41 @@ function RouteComponent() {
 
 function Hero() {
 	return (
-		<div className="space-y-4">
-			<div className="text-6xl mb-4 hover:scale-110 transition-transform cursor-default">👨‍💼</div>
-			<h1 className="text-4xl font-bold text-balance">Welcome to Dadbot</h1>
-			<p className="text-lg text-muted-foreground text-balance">
+		<div className="space-y-6">
+			<div className="flex justify-center mb-6">
+				<LaughingDadAvatar />
+			</div>
+			<h1 className="text-5xl md:text-6xl font-bold text-balance tracking-tight">
+				Welcome to Dadbot
+			</h1>
+			<p className="text-lg md:text-xl text-muted-foreground text-balance max-w-2xl mx-auto leading-relaxed">
 				The most groan-worthy AI chat bot on the internet. I'm not just artificially intelligent -
 				I'm
 				<span className="font-semibold text-primary"> artificially hilarious</span>! Prepare
 				yourself for puns, wordplay, and jokes so bad they're good!
 			</p>
 		</div>
+	)
+}
+
+function LaughingDadAvatar() {
+	const [frameIndex, setFrameIndex] = React.useState(0)
+
+	React.useEffect(() => {
+		const interval = setInterval(() => {
+			setFrameIndex((prev) => (prev + 1) % laughFrames.length)
+		}, 1000 / 6) // 6 FPS like the main DadAvatar component
+
+		return () => clearInterval(interval)
+	}, [])
+
+	return (
+		<img
+			src={laughFrames[frameIndex]}
+			alt="Laughing Dad"
+			className="h-48 md:h-64 w-auto hover:scale-110 transition-transform cursor-default"
+			style={{ imageRendering: "crisp-edges" }}
+		/>
 	)
 }
 
@@ -83,14 +110,17 @@ const FEATURES = [
 
 function Features() {
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 			{FEATURES.map(({ heading, subheading, icon: Icon }) => (
-				<Card key={heading} className="p-4">
-					<CardContent className="flex items-center gap-3 p-0">
+				<Card
+					key={heading}
+					className="p-5 hover:shadow-md transition-all hover:border-primary/20 cursor-default"
+				>
+					<CardContent className="flex items-center gap-4 p-0">
 						<Icon />
 						<div className="text-left">
-							<h3 className="font-semibold">{heading}</h3>
-							<p className="text-sm text-muted-foreground">{subheading}</p>
+							<h3 className="font-semibold text-base">{heading}</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed">{subheading}</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -110,14 +140,14 @@ const SAMPLE_PROMPTS = [
 
 function SamplePrompts() {
 	return (
-		<div className="space-y-4">
-			<h3 className="text-lg font-semibold">Ask me something - I'm all ears 🌽:</h3>
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+		<div className="space-y-6">
+			<h3 className="text-xl md:text-2xl font-semibold">Ask me something - I'm all ears 🌽</h3>
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				{SAMPLE_PROMPTS.map((prompt) => (
 					<Button
 						key={prompt}
 						variant="outline"
-						className="h-auto p-3 bg-card text-center hover:bg-primary/5 hover:text-primary transition-colors cursor-pointer"
+						className="h-auto py-4 px-4 text-center cursor-pointer text-base"
 						asChild
 					>
 						<Link to="/chat" search={{ prompt }}>

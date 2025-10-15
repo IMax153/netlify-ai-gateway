@@ -10,9 +10,12 @@
 # NodeJS
 node_modules
 
-# Tanstack 
+# Tanstack
 .tanstack
 dist
+
+# TypeScript
+*.tsbuildinfo
 
 # Persisted State (Development)
 chats
@@ -21,3 +24,4 @@ chats
 .env
 .env.*
 !.env.example
+.DS_Store

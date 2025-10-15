@@ -3,6 +3,7 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest"
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse"
 import * as Arr from "effect/Array"
 import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import * as Schema from "effect/Schema"
 
 export class DadJoke extends Schema.Class<DadJoke>("DadJoke")({
@@ -26,11 +27,23 @@ export class ICanHazDadJoke extends Effect.Service<ICanHazDadJoke>()("ICanHazDad
 			return yield* httpClientOk
 				.get("/search", {
 					acceptJson: true,
-					urlParams: { searchTerm },
+					urlParams: { term: searchTerm },
 				})
 				.pipe(
 					Effect.flatMap(HttpClientResponse.schemaBodyJson(SearchResponse)),
-					Effect.flatMap(({ results }) => Arr.head(results)),
+					Effect.map(({ results }) => Arr.head(results)),
+					Effect.map(Option.map((joke) => joke.joke)),
+					Effect.orDie,
+				)
+		})
+
+		const random = Effect.fn("ICanHazDadJoke.random")(function* () {
+			return yield* httpClientOk
+				.get("/", {
+					acceptJson: true,
+				})
+				.pipe(
+					Effect.flatMap(HttpClientResponse.schemaBodyJson(DadJoke)),
 					Effect.map((joke) => joke.joke),
 					Effect.orDie,
 				)
@@ -38,6 +51,7 @@ export class ICanHazDadJoke extends Effect.Service<ICanHazDadJoke>()("ICanHazDad
 
 		return {
 			search,
+			random,
 		} as const
 	}),
 }) {}

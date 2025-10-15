@@ -558,6 +558,7 @@ export const PromptInputSubmit = ({
 	size = "icon",
 	status,
 	children,
+	disabled,
 	...props
 }: PromptInputSubmitProps) => {
 	let Icon = <SendIcon className="size-4" />
@@ -573,6 +574,7 @@ export const PromptInputSubmit = ({
 	return (
 		<Button
 			className={cn("gap-1.5 rounded-lg", className)}
+			disabled={Boolean(disabled)}
 			size={size}
 			type="submit"
 			variant={variant}

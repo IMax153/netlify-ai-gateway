@@ -1,62 +1,57 @@
+"use client"
+
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { CopyIcon, RefreshCcwIcon } from "lucide-react"
 import * as React from "react"
-import { Action, Actions } from "@/components/ai-elements/actions"
 import {
 	Conversation,
 	ConversationContent,
 	ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import { Loader } from "@/components/ai-elements/loader"
-import { Message, MessageAvatar, MessageContent } from "@/components/ai-elements/message"
-import {
-	PromptInput,
-	PromptInputActionMenu,
-	PromptInputActionMenuContent,
-	PromptInputActionMenuTrigger,
-	PromptInputBody,
-	type PromptInputMessage,
-	PromptInputModelSelect,
-	PromptInputModelSelectContent,
-	PromptInputModelSelectItem,
-	PromptInputModelSelectTrigger,
-	PromptInputModelSelectValue,
-	PromptInputSubmit,
-	PromptInputTextarea,
-	PromptInputToolbar,
-	PromptInputTools,
-} from "@/components/ai-elements/prompt-input"
-import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning"
-import { Response } from "@/components/ai-elements/response"
-import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool"
+import type { PromptInputMessage } from "@/components/ai-elements/prompt-input"
+import { ChatDadAvatar, useDadAvatarInputPanel } from "@/components/chat/dad-avatar"
+import { ChatInputPanel } from "@/components/chat/input-panel"
+import { ChatMessageList } from "@/components/chat/message-list"
+import type { ChatModelOption } from "@/components/chat/types"
+import { useSounds } from "@/hooks/use-sounds"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
-import type * as UIMessage from "@/lib/domain/ui-message"
 
-const models = [
+const MODELS: readonly ChatModelOption[] = [
 	{ value: "gpt-4o-mini", name: "GPT-4o Mini" },
 	{ value: "gpt-4o", name: "GPT-4o" },
-]
+] as const
 
-export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
+export type ChatProps = {
+	readonly initialPrompt?: string | undefined
+}
+
+export function Chat({ initialPrompt = "" }: ChatProps) {
+	const { playSound } = useSounds()
 	const [input, setInput] = React.useState(initialPrompt)
-	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
+	const [currentModelId, setCurrentModelId] = React.useState(MODELS[0].value)
+	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+	const { inputPanelRef, inputPanelBounds } = useDadAvatarInputPanel()
 
-	// Ensure we are never using a stale reference to the selected model when
-	// the request to the server is prepared / sent
 	const currentModelIdRef = React.useRef(currentModelId)
 	React.useEffect(() => {
 		currentModelIdRef.current = currentModelId
 	}, [currentModelId])
 
-	const { messages, sendMessage, status, regenerate } = useChat<ChatUIMessage>({
+	React.useEffect(() => {
+		if (textareaRef.current && initialPrompt) {
+			const length = initialPrompt.length
+			textareaRef.current.setSelectionRange(length, length)
+		}
+	}, [initialPrompt])
+
+	const { messages, sendMessage, status, regenerate, stop } = useChat<ChatUIMessage>({
 		experimental_throttle: 50,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
 			prepareSendMessagesRequest(request) {
 				return {
 					body: {
+						// TODO: Use the api/chat.ts Schema for this structure
 						id: request.id,
 						message: request.messages.at(-1),
 						selectedChatModel: currentModelIdRef.current,
@@ -67,161 +62,89 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		}),
 	})
 
-	const handleSubmit = (message: PromptInputMessage) => {
-		const hasText = Boolean(message.text)
-		const hasAttachments = Boolean(message.files?.length)
+	const isEmptyConversation = messages.length === 0
+	const latestMessageId = messages.at(-1)?.id
 
-		if (!(hasText || hasAttachments)) {
-			return
+	React.useEffect(() => {
+		playSound("greeting")
+	}, [playSound])
+
+	const previousStatusRef = React.useRef(status)
+	React.useEffect(() => {
+		const wasStreaming = previousStatusRef.current === "streaming"
+		const isNowReady = status === "ready"
+		const lastMessageIsAssistant = messages.at(-1)?.role === "assistant"
+
+		if (wasStreaming && isNowReady && lastMessageIsAssistant) {
+			playSound("laugh")
 		}
 
-		sendMessage(
-			{
-				text: message.text || "Sent with attachments",
-				...(message.files !== undefined ? { files: message.files } : {}),
-			},
-			{
-				body: { model: currentModelId },
-			},
-		)
+		previousStatusRef.current = status
+	}, [messages, playSound, status])
 
-		setInput("")
-	}
+	const handleSubmit = React.useCallback(
+		(message: PromptInputMessage) => {
+			if (status === "submitted" || status === "streaming") {
+				stop()
+				return
+			}
+
+			const hasText = Boolean(message.text)
+			const hasAttachments = Boolean(message.files?.length)
+
+			if (!(hasText || hasAttachments)) {
+				return
+			}
+
+			playSound("think")
+
+			sendMessage(
+				{
+					text: message.text || "Sent with attachments",
+					...(message.files !== undefined ? { files: message.files } : {}),
+				},
+				{ body: { model: currentModelId } },
+			)
+
+			setInput("")
+		},
+		[currentModelId, playSound, sendMessage, status, stop],
+	)
 
 	return (
-		<div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
-			<div className="flex flex-col h-full">
+		<div className="flex flex-col h-screen pt-14">
+			<div className="flex-1 overflow-hidden">
 				<Conversation className="h-full">
-					<ConversationContent>
-						{messages.map((message, index) => (
-							<div key={`${message.id}-${index}`}>
-								{message.role === "assistant" &&
-									message.parts.filter((part) => part.type === "source-url").length > 0 && (
-										<Sources>
-											<SourcesTrigger
-												count={message.parts.filter((part) => part.type === "source-url").length}
-											/>
-											{message.parts
-												.filter((part) => part.type === "source-url")
-												.map((part, i) => (
-													<SourcesContent key={`${message.id}-${i}`}>
-														<Source key={`${message.id}-${i}`} href={part.url} title={part.url} />
-													</SourcesContent>
-												))}
-										</Sources>
-									)}
-								{message.parts.map((part, i) => {
-									switch (part.type) {
-										case "text":
-											return (
-												<React.Fragment key={`${message.id}-${i}`}>
-													<Message from={message.role}>
-														<MessageContent>
-															<Response>{part.text}</Response>
-														</MessageContent>
-														<MessageAvatar
-															className="h-10 w-10"
-															src={
-																message.role === "user"
-																	? "https://github.com/IMax153.png"
-																	: "https://github.com/Effect-TS.png"
-															}
-														/>
-													</Message>
-													{message.role === "assistant" && i === messages.length - 1 && (
-														<Actions className="mt-2">
-															<Action onClick={() => regenerate()} label="Retry">
-																<RefreshCcwIcon className="size-3" />
-															</Action>
-															<Action
-																onClick={() => navigator.clipboard.writeText(part.text)}
-																label="Copy"
-															>
-																<CopyIcon className="size-3" />
-															</Action>
-														</Actions>
-													)}
-												</React.Fragment>
-											)
-										case "reasoning":
-											return (
-												<Reasoning
-													key={`${message.id}-${i}`}
-													className="w-full"
-													isStreaming={
-														status === "streaming" &&
-														i === message.parts.length - 1 &&
-														message.id === messages.at(-1)?.id
-													}
-												>
-													<ReasoningTrigger />
-													<ReasoningContent>{part.text}</ReasoningContent>
-												</Reasoning>
-											)
-										case "tool-GetDadJoke": {
-											return <ToolCall key={`${message.id}-${i}`} part={part} />
-										}
-										default:
-											return null
-									}
-								})}
-							</div>
-						))}
-						{status === "submitted" && <Loader />}
+					<ConversationContent className="max-w-screen-md mx-auto px-6 py-6">
+						<ChatMessageList
+							latestMessageId={latestMessageId}
+							messages={messages}
+							onRegenerate={regenerate}
+							status={status}
+						/>
+
+						<ChatDadAvatar
+							inputPanelTop={inputPanelBounds.top}
+							isEmptyConversation={isEmptyConversation}
+							messages={messages}
+							status={status}
+						/>
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>
-
-				<PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
-					<PromptInputBody>
-						<PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
-					</PromptInputBody>
-					<PromptInputToolbar>
-						<PromptInputTools>
-							<PromptInputActionMenu>
-								<PromptInputActionMenuTrigger />
-								<PromptInputActionMenuContent>No actions at this time</PromptInputActionMenuContent>
-							</PromptInputActionMenu>
-							<PromptInputModelSelect
-								onValueChange={(value) => {
-									setCurrentModelId(value)
-								}}
-								value={currentModelId}
-							>
-								<PromptInputModelSelectTrigger>
-									<PromptInputModelSelectValue />
-								</PromptInputModelSelectTrigger>
-								<PromptInputModelSelectContent>
-									{models.map((model) => (
-										<PromptInputModelSelectItem key={model.value} value={model.value}>
-											{model.name}
-										</PromptInputModelSelectItem>
-									))}
-								</PromptInputModelSelectContent>
-							</PromptInputModelSelect>
-						</PromptInputTools>
-						<PromptInputSubmit disabled={!input && !status} status={status} />
-					</PromptInputToolbar>
-				</PromptInput>
 			</div>
-		</div>
-	)
-}
 
-function ToolCall({
-	part,
-}: {
-	readonly part: UIMessage.UIToolParts<UIMessage.Tools<typeof ChatUIMessage>>
-}) {
-	return (
-		<Tool defaultOpen={false}>
-			<ToolHeader type={part.type.replace("tool-", "")} state={part.state} />
-			<ToolContent>
-				<ToolInput input={part.input} />
-				{part.state === "output-available" && (
-					<ToolOutput errorText={undefined} output={part.output as any} />
-				)}
-			</ToolContent>
-		</Tool>
+			<ChatInputPanel
+				ref={inputPanelRef}
+				currentModelId={currentModelId}
+				inputValue={input}
+				models={MODELS}
+				onInputChange={(value) => setInput(value)}
+				onModelChange={setCurrentModelId}
+				onSubmit={handleSubmit}
+				status={status}
+				textareaRef={textareaRef}
+			/>
+		</div>
 	)
 }

@@ -222,15 +222,28 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 								</div>
 							))}
 						</AnimatePresence>
-						{status === "submitted" && <Loader />}
-						{messages.length > 0 && messages.at(-1)?.role === "assistant" && (
-							<div className="flex justify-center mt-4">
-								<DadAvatar
-									state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
-									className="h-20"
-								/>
-							</div>
-						)}
+
+						<motion.div
+							className="flex justify-center"
+							animate={{
+								scale: messages.length === 0 ? 3 : 1,
+								y: messages.length === 0 ? "calc(50vh - 50% - 3.5rem)" : 0,
+							}}
+							initial={false}
+							transition={{
+								type: "spring",
+								stiffness: 200,
+								damping: 30,
+							}}
+							style={{
+								marginTop: messages.length === 0 ? 0 : "1rem",
+							}}
+						>
+							<DadAvatar
+								state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
+								className="h-20"
+							/>
+						</motion.div>
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>

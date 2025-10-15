@@ -85,15 +85,6 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		}),
 	})
 
-	// if the last message parts contains a tool-call where the state is input-available, log it!
-	const lastMessage = messages.at(-1)
-	if (lastMessage?.role === "assistant") {
-		const toolCallParts = lastMessage.parts.filter(
-			(part) => part.type === "tool-GetDadJoke" && part.state === "input-available",
-		)
-		console.dir(toolCallParts, { depth: null })
-	}
-
 	const handleSubmit = (message: PromptInputMessage) => {
 		if (status === "submitted" || status === "streaming") {
 			stop()
@@ -219,7 +210,8 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 														</Reasoning>
 													</motion.div>
 												)
-											case "tool-GetDadJoke": {
+											case "tool-SearchDadJoke":
+											case "tool-GetRandomDadJoke": {
 												return (
 													<motion.div
 														key={`${message.id}-${i}`}

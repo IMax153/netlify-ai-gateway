@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import type { ToolUIPart } from "ai"
 import {
 	CheckCircleIcon,
 	ChevronDownIcon,
@@ -9,14 +9,14 @@ import {
 	WrenchIcon,
 	XCircleIcon,
 } from "lucide-react"
-import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { ComponentProps, ReactNode } from "react"
+import * as React from "react"
 import useMeasure from "react-use-measure"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
-import type { ToolUIPart } from "ai"
 import { CodeBlock } from "./code-block"
 
 export type ToolProps = ComponentProps<typeof Collapsible>

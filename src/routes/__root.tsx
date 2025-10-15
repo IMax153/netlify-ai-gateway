@@ -8,9 +8,9 @@ import {
 	useLocation,
 } from "@tanstack/react-router"
 import type { ReactNode } from "react"
-import { Button } from "@/components/ui/button"
 import { ThemeProvider, useTheme } from "@/components/theme-provider"
 import { TopBar } from "@/components/top-bar"
+import { Button } from "@/components/ui/button"
 
 import appCss from "../styles/root.css?url"
 

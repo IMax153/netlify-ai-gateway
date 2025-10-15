@@ -13,6 +13,7 @@ import { ChatDadAvatar, useDadAvatarInputPanel } from "@/components/chat/dad-ava
 import { ChatInputPanel } from "@/components/chat/input-panel"
 import { ChatMessageList } from "@/components/chat/message-list"
 import type { ChatModelOption } from "@/components/chat/types"
+import { useAvatarImagesPreloader } from "@/hooks/use-dad-images-preloader"
 import { useSounds } from "@/hooks/use-sounds"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
 
@@ -27,6 +28,7 @@ export type ChatProps = {
 
 export function Chat({ initialPrompt = "" }: ChatProps) {
 	const { playSound } = useSounds()
+	const { isLoaded: areImagesLoaded } = useAvatarImagesPreloader()
 	const [input, setInput] = React.useState(initialPrompt)
 	const [currentModelId, setCurrentModelId] = React.useState(MODELS[0].value)
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
@@ -110,6 +112,17 @@ export function Chat({ initialPrompt = "" }: ChatProps) {
 		},
 		[currentModelId, playSound, sendMessage, status, stop],
 	)
+
+	// Don't render until images are preloaded
+	if (!areImagesLoaded) {
+		return (
+			<div className="flex flex-col h-screen pt-14">
+				<div className="flex-1 overflow-hidden flex items-center justify-center">
+					<div className="text-muted-foreground">Loading...</div>
+				</div>
+			</div>
+		)
+	}
 
 	return (
 		<div className="flex flex-col h-screen pt-14">

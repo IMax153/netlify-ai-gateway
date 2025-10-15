@@ -112,11 +112,41 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			},
 		}),
 	})
+	const isEmptyConversation = messages.length === 0
+
+	const dadPosition = React.useMemo(() => {
+		const { left, width, height, top } = targetBounds
+		if (isEmptyConversation && viewportHeight !== null && height > 0) {
+			return {
+				left,
+				width,
+				height,
+				top: Math.max(0, (viewportHeight - height) / 2),
+			}
+		}
+
+		return { left, width, height, top }
+	}, [
+		isEmptyConversation,
+		targetBounds.height,
+		targetBounds.left,
+		targetBounds.top,
+		targetBounds.width,
+		viewportHeight,
+		targetBounds,
+	])
+
+	const dadIsReady =
+		targetBounds.width > 0 &&
+		targetBounds.height > 0 &&
+		(!isEmptyConversation || viewportHeight !== null)
+
 	// Force remeasure when messages change to ensure dad avatar follows
+	// biome-ignore lint/correctness/useExhaustiveDependencies: we use messages to trigger the effect
 	React.useEffect(() => {
 		const rafId = requestAnimationFrame(updateTargetBounds)
 		return () => cancelAnimationFrame(rafId)
-	}, [messages.length, updateTargetBounds])
+	}, [messages, updateTargetBounds])
 
 	const handleSubmit = (message: PromptInputMessage) => {
 		if (status === "submitted" || status === "streaming") {
@@ -257,7 +287,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 						</AnimatePresence>
 
 						{/* Invisible placeholder that defines where dad should be */}
-						<div className={messages.length === 0 ? "flex justify-center" : "flex justify-start"}>
+						<div className={isEmptyConversation ? "flex justify-center" : "flex justify-start"}>
 							<div
 								ref={targetRef}
 								className="h-20 w-20 invisible pointer-events-none"
@@ -266,26 +296,34 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 						</div>
 
 						{/* Portal for dad avatar with smooth position animation */}
-							{typeof document !== "undefined" &&
-								targetBounds.width > 0 &&
-								createPortal(
-									<motion.div
-										key="dad-avatar-portal"
-										className="fixed pointer-events-none z-50"
-										animate={{
-											left: targetBounds.left,
-											top:
-												messages.length === 0 && viewportHeight !== null
-													? Math.max(0, (viewportHeight - targetBounds.height) / 2)
-													: targetBounds.top,
-											width: targetBounds.width,
-											height: targetBounds.height,
-											scale: messages.length === 0 ? 3 : 1,
-										}}
-										transition={{
+						{typeof document !== "undefined" &&
+							dadIsReady &&
+							createPortal(
+								<motion.div
+									key="dad-avatar-portal"
+									className="fixed pointer-events-none z-50"
+									initial={{
+										left: dadPosition.left,
+										top: dadPosition.top,
+										width: dadPosition.width,
+										height: dadPosition.height,
+										opacity: 0,
+										filter: "blur(8px)",
+										scale: 0.5,
+									}}
+									animate={{
+										left: dadPosition.left,
+										top: dadPosition.top,
+										width: dadPosition.width,
+										height: dadPosition.height,
+										opacity: 1,
+										filter: "blur(0px)",
+										scale: isEmptyConversation ? 3 : 1,
+									}}
+									transition={{
 										type: "spring",
-										stiffness: 200,
-										damping: 30,
+										visualDuration: 0.4,
+										bounce: 0.1,
 									}}
 									style={{
 										transformOrigin: "center center",

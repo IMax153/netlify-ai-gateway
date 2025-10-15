@@ -8,6 +8,7 @@ import * as HttpApp from "@effect/platform/HttpApp"
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { createFileRoute } from "@tanstack/react-router"
+import { Stream } from "effect"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -20,7 +21,6 @@ import {
 import { promptFromUIMessages } from "@/lib/ai/ui-message/prompt-from-ui-messages"
 import * as UIMessage from "@/lib/domain/ui-message"
 import { NetlifyOrFileSystemKVS } from "@/services/kvs"
-import { Stream } from "effect"
 
 const SYSTEM_PROMPT = `You are a chatbot who always speaks as a stereotypical 
 dad, full of groan-inducing puns, cheesy one-liners, and dorky humor. Your 

@@ -1,30 +1,14 @@
 "use client"
 
-import { cn } from "@/lib/utils"
 import { Atom, Result, useAtom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Schedule, Stream } from "effect"
-import { useEffect, useState } from "react"
-import idle1 from "@/assets/idle-1.png"
-import idle2 from "@/assets/idle-2.png"
-import idle3 from "@/assets/idle-3.png"
-import idle4 from "@/assets/idle-4.png"
-import idle5 from "@/assets/idle-5.png"
-import idle6 from "@/assets/idle-6.png"
-import laugh1 from "@/assets/laugh-1.png"
-import laugh2 from "@/assets/laugh-2.png"
-import laugh3 from "@/assets/laugh-3.png"
-import laugh4 from "@/assets/laugh-4.png"
-import laugh5 from "@/assets/laugh-5.png"
-import think1 from "@/assets/think-1.png"
-import think2 from "@/assets/think-2.png"
-import think3 from "@/assets/think-3.png"
-import think4 from "@/assets/think-4.png"
-import think5 from "@/assets/think-5.png"
+import { useEffect } from "react"
+import { allDadImages } from "@/hooks/use-dad-images-preloader"
+import { cn } from "@/lib/utils"
 
-const idleFrames = [idle1, idle2, idle3, idle4, idle5, idle6]
-const laughFrames = [laugh1, laugh2, laugh3, laugh4, laugh5]
-const thinkingFrames = [think1, think2, think3, think4, think5]
-const allFrames = [...idleFrames, ...laughFrames, ...thinkingFrames]
+const idleFrames = allDadImages.idle
+const laughFrames = allDadImages.laughing
+const thinkingFrames = allDadImages.thinking
 
 export type DadState = "idle" | "thinking"
 
@@ -109,7 +93,6 @@ const frameIndexAtom = Atom.make((get) => {
  * for 1 second before settling into the idle animation.
  */
 export const DadAvatar = ({ state = "idle", className }: DadAvatarProps) => {
-	const [imagesLoaded, setImagesLoaded] = useState(false)
 	const [dadState, setDadState] = useAtom(dadStateAtom)
 	const setPreviousDadState = useAtomSet(previousDadStateAtom)
 
@@ -127,34 +110,6 @@ export const DadAvatar = ({ state = "idle", className }: DadAvatarProps) => {
 	const animationState = Result.getOrElse(animationStateValue, () => "idle" as DadAnimationState)
 	const frameIndex = useAtomValue(frameIndexAtom)
 
-	// Preload all images
-	useEffect(() => {
-		const loadImages = async () => {
-			const imagePromises = allFrames.map((src) => {
-				return new Promise((resolve, reject) => {
-					const img = new Image()
-					img.onload = resolve
-					img.onerror = reject
-					img.src = src
-				})
-			})
-
-			try {
-				await Promise.all(imagePromises)
-				setImagesLoaded(true)
-			} catch (error) {
-				console.error("Failed to preload images:", error)
-				setImagesLoaded(true) // Still try to show the images
-			}
-		}
-
-		loadImages()
-	}, [])
-
-	// Don't render until images are loaded
-	if (!imagesLoaded) {
-		return <div className={cn("h-24 w-auto", className)} />
-	}
 	const frames = getFrames(animationState)
 	return (
 		<img

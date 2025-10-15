@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Heart, MessageSquare, Users, Zap } from "lucide-react"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import laugh1 from "@/assets/laugh-1.png"
+import laugh2 from "@/assets/laugh-2.png"
+import laugh3 from "@/assets/laugh-3.png"
+import laugh4 from "@/assets/laugh-4.png"
+import laugh5 from "@/assets/laugh-5.png"
+
+const laughFrames = [laugh1, laugh2, laugh3, laugh4, laugh5]
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
@@ -24,8 +32,8 @@ function RouteComponent() {
 function Hero() {
 	return (
 		<div className="space-y-6">
-			<div className="text-7xl md:text-8xl mb-6 hover:scale-110 transition-transform cursor-default">
-				👨‍💼
+			<div className="flex justify-center mb-6">
+				<LaughingDadAvatar />
 			</div>
 			<h1 className="text-5xl md:text-6xl font-bold text-balance tracking-tight">
 				Welcome to Dadbot
@@ -37,6 +45,27 @@ function Hero() {
 				yourself for puns, wordplay, and jokes so bad they're good!
 			</p>
 		</div>
+	)
+}
+
+function LaughingDadAvatar() {
+	const [frameIndex, setFrameIndex] = React.useState(0)
+
+	React.useEffect(() => {
+		const interval = setInterval(() => {
+			setFrameIndex((prev) => (prev + 1) % laughFrames.length)
+		}, 1000 / 6) // 6 FPS like the main DadAvatar component
+
+		return () => clearInterval(interval)
+	}, [])
+
+	return (
+		<img
+			src={laughFrames[frameIndex]}
+			alt="Laughing Dad"
+			className="h-48 md:h-64 w-auto hover:scale-110 transition-transform cursor-default"
+			style={{ imageRendering: "crisp-edges" }}
+		/>
 	)
 }
 

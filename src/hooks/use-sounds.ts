@@ -57,7 +57,7 @@ export function useSounds() {
 			// Create and play new audio
 			const audio = new Audio(randomSound)
 			audioRef.current = audio
-			audio.volume = 0.5 // Set default volume to 50%
+			audio.volume = 0.35 // Set default volume to 35% (70% of original 50%)
 			audio.play().catch((error) => {
 				console.warn(`Failed to play ${type} sound:`, error)
 			})

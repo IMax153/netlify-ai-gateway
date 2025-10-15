@@ -87,6 +87,37 @@ export const ToolHeader = ({ className, type, state, ...props }: ToolHeaderProps
 	)
 }
 
+export const ToolHeaderStatic = ({ className, type, state, ...props }: ToolHeaderProps) => {
+	const isProcessing = state === "input-streaming" || state === "input-available"
+
+	return (
+		<div
+			className={cn(
+				"relative flex w-full items-center justify-between gap-4 overflow-hidden p-3",
+				className,
+			)}
+			{...props}
+		>
+			<motion.span
+				className="pointer-events-none absolute inset-0 bg-primary/10"
+				initial={{ opacity: 0 }}
+				animate={isProcessing ? { opacity: [0.2, 0.55, 0.2] } : { opacity: 0 }}
+				transition={
+					isProcessing
+						? { repeat: Infinity, repeatType: "reverse", duration: 1.4, ease: "easeInOut" }
+						: { duration: 0.2, ease: "easeOut" }
+				}
+				aria-hidden="true"
+			/>
+			<div className="relative flex items-center gap-3">
+				<WrenchIcon className="size-4 text-muted-foreground" />
+				<span className="font-medium text-sm">{type}</span>
+				<AnimatedStatusBadge state={state} />
+			</div>
+		</div>
+	)
+}
+
 const AnimatedStatusBadge = ({ state }: { readonly state: ToolUIPart["state"] }) => {
 	const { label, Icon, iconClassName } = STATUS_META[state]
 	const [ref, bounds] = useMeasure()

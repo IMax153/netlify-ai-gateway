@@ -9,6 +9,7 @@ import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-e
 import { Response } from "@/components/ai-elements/response"
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources"
 import { ToolCall } from "@/components/tool-call"
+import { BabyAvatar } from "@/components/baby-avatar"
 import type { ChatUIMessage } from "@/lib/domain/chat-message"
 import type { ChatStatus } from "./types"
 
@@ -142,9 +143,7 @@ function TextPart({
 					<MessageContent>
 						<Response>{part.text}</Response>
 					</MessageContent>
-					{message.role === "user" && (
-						<MessageAvatar className="h-10 w-10" src="https://github.com/IMax153.png" />
-					)}
+					{message.role === "user" && <BabyAvatar />}
 				</Message>
 			</motion.div>
 			{shouldShowActions && (

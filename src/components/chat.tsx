@@ -155,19 +155,10 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 																<MessageContent>
 																	<Response>{part.text}</Response>
 																</MessageContent>
-																{message.role === "user" ? (
+																{message.role === "user" && (
 																	<MessageAvatar
 																		className="h-10 w-10"
 																		src="https://github.com/IMax153.png"
-																	/>
-																) : (
-																	<DadAvatar
-																		className="h-20"
-																		state={
-																			status === "streaming" && message.id === messages.at(-1)?.id
-																				? "thinking"
-																				: "idle"
-																		}
 																	/>
 																)}
 															</Message>
@@ -235,6 +226,15 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 					</ConversationContent>
 					<ConversationScrollButton />
 				</Conversation>
+			</div>
+
+			<div className="bg-background pb-2">
+				<div className="max-w-screen-md mx-auto px-6 flex justify-center">
+					<DadAvatar
+						state={status === "streaming" || status === "submitted" ? "thinking" : "idle"}
+						className="h-20"
+					/>
+				</div>
 			</div>
 
 			<div className="bg-background">

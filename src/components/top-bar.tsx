@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { VolumeToggle } from "@/components/volume-toggle"
 
 type TopBarProps = {
 	left?: ReactNode
@@ -13,6 +14,7 @@ export function TopBar({ left, right }: TopBarProps) {
 				<div className="flex items-center gap-4">{left}</div>
 				<div className="flex items-center gap-4">
 					{right}
+					<VolumeToggle />
 					<ThemeToggle />
 				</div>
 			</div>

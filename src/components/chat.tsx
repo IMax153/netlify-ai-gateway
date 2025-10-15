@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react"
 import * as React from "react"
 import { createPortal } from "react-dom"
 import useMeasure from "react-use-measure"
+import { useSounds } from "@/hooks/use-sounds"
 import { Action, Actions } from "@/components/ai-elements/actions"
 import {
 	Conversation,
@@ -51,6 +52,7 @@ const chatItemAnimation = {
 } as const
 
 export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string | undefined }) {
+	const { playSound } = useSounds()
 	const [input, setInput] = React.useState(initialPrompt)
 	const [currentModelId, setCurrentModelId] = React.useState(models[0].value)
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
@@ -118,6 +120,30 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 	})
 	const isEmptyConversation = messages.length === 0
 
+	// Play greeting sound on mount (when chat first loads)
+	React.useEffect(() => {
+		// Try to play greeting when component mounts
+		// Note: May be blocked by browser autoplay restrictions
+		playSound("greeting")
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
+
+	// Track previous status to detect when AI finishes responding
+	const prevStatusRef = React.useRef(status)
+
+	React.useEffect(() => {
+		const wasStreaming = prevStatusRef.current === "streaming"
+		const isNowReady = status === "ready"
+		const lastMessageIsAssistant = messages.length > 0 && messages[messages.length - 1].role === "assistant"
+
+		// Play laugh sound when AI finishes responding
+		if (wasStreaming && isNowReady && lastMessageIsAssistant) {
+			playSound("laugh")
+		}
+
+		prevStatusRef.current = status
+	}, [status, messages, playSound])
+
 	const dadPosition = React.useMemo(() => {
 		const { left, width, height, top } = targetBounds
 
@@ -177,6 +203,9 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		if (!(hasText || hasAttachments)) {
 			return
 		}
+
+		// Play think sound when user submits a message
+		playSound("think")
 
 		sendMessage(
 			{

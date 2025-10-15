@@ -58,6 +58,10 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		scroll: true,
 		offsetSize: true,
 	})
+	const [inputPanelRef, inputPanelBounds] = useMeasure({
+		scroll: true,
+		offsetSize: true,
+	})
 	const [viewportHeight, setViewportHeight] = React.useState<number | null>(() =>
 		typeof window === "undefined" ? null : window.innerHeight,
 	)
@@ -116,6 +120,8 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 
 	const dadPosition = React.useMemo(() => {
 		const { left, width, height, top } = targetBounds
+
+		// For empty conversation, center the dad avatar
 		if (isEmptyConversation && viewportHeight !== null && height > 0) {
 			return {
 				left,
@@ -125,7 +131,17 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 			}
 		}
 
-		return { left, width, height, top }
+		// Calculate the maximum allowed top position (top of input panel minus dad height)
+		// Use the actual measured input panel position if available
+		const dadHeight = 80 // h-20 = 5rem = 80px
+		const maxTop = inputPanelBounds.top > 0 ? inputPanelBounds.top - dadHeight : Infinity
+
+		return {
+			left,
+			width,
+			height,
+			top: Math.min(top, maxTop),
+		}
 	}, [
 		isEmptyConversation,
 		targetBounds.height,
@@ -134,6 +150,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 		targetBounds.width,
 		viewportHeight,
 		targetBounds,
+		inputPanelBounds.top,
 	])
 
 	const dadIsReady =
@@ -341,7 +358,7 @@ export function Chat({ initialPrompt = "" }: { readonly initialPrompt?: string |
 				</Conversation>
 			</div>
 
-			<div className="bg-background">
+			<div ref={inputPanelRef} className="bg-background">
 				<PromptInput
 					onSubmit={handleSubmit}
 					className="max-w-screen-md mx-auto mb-4"

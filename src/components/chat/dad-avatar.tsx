@@ -239,7 +239,7 @@ function DadAvatarPortal({ position, status, isReady, isEmptyConversation }: Dad
 				transformOrigin: "center center",
 			}}
 		>
-			<DadAvatar state={status === "streaming" || status === "submitted" ? "thinking" : "idle"} className="h-20 w-20" />
+			<DadAvatar state={status === "streaming" || status === "submitted" ? "thinking" : "idle"} className="h-20 w-auto" />
 		</motion.div>,
 		document.body,
 	)

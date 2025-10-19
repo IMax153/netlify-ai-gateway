@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@effect-atom/atom-react':
+        specifier: ^0.3.2
+        version: 0.3.3(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(@effect/rpc@0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(effect@3.18.4)(react@19.2.0)(scheduler@0.27.0)
       motion:
         specifier: ^12.23.24
         version: 12.23.24(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -478,6 +481,21 @@ packages:
   '@dependents/detective-less@5.0.1':
     resolution: {integrity: sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==}
     engines: {node: '>=18'}
+
+  '@effect-atom/atom-react@0.3.3':
+    resolution: {integrity: sha512-3m3TSO0k6HtBobklntt0h7eBRDxb5ots/Ej2P3hIFJonxNmt3KZ21S3ZYvzRY/i/HzFn3i2e+QRQSJI+Am8uVA==}
+    peerDependencies:
+      effect: ^3.18
+      react: '>=18 <20'
+      scheduler: '*'
+
+  '@effect-atom/atom@0.3.3':
+    resolution: {integrity: sha512-hzsOARN/EGDO7Q7zG1wY1jv1MR8m7uWUNTXhV42NGw3z9CPaXt4yuhrqUQyaXvOYbthasSIHWAgnlPvDHrdrwg==}
+    peerDependencies:
+      '@effect/experimental': ^0.56.0
+      '@effect/platform': ^0.92.1
+      '@effect/rpc': ^0.71.0
+      effect: ^3.18.4
 
   '@effect/ai-openai@0.34.0':
     resolution: {integrity: sha512-7xcH3xoMZhgbnlvMASOv2L+MqN8Bon+pdNhnwGMH1+F1k/zZSsf1NjPFqw/szz523E3MhEv/YU+80bOBdni1ig==}
@@ -7610,6 +7628,24 @@ snapshots:
     dependencies:
       gonzales-pe: 4.3.0
       node-source-walk: 7.0.1
+
+  '@effect-atom/atom-react@0.3.3(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(@effect/rpc@0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(effect@3.18.4)(react@19.2.0)(scheduler@0.27.0)':
+    dependencies:
+      '@effect-atom/atom': 0.3.3(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(@effect/rpc@0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(effect@3.18.4)
+      effect: 3.18.4
+      react: 19.2.0
+      scheduler: 0.27.0
+    transitivePeerDependencies:
+      - '@effect/experimental'
+      - '@effect/platform'
+      - '@effect/rpc'
+
+  '@effect-atom/atom@0.3.3(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(@effect/rpc@0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(effect@3.18.4)':
+    dependencies:
+      '@effect/experimental': 0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4)
+      '@effect/platform': 0.92.1(effect@3.18.4)
+      '@effect/rpc': 0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4)
+      effect: 3.18.4
 
   '@effect/ai-openai@0.34.0(@effect/ai@0.31.1(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(@effect/rpc@0.71.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(effect@3.18.4))(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4)':
     dependencies:

@@ -1,0 +1,2 @@
+[template.environment]
+  NETLIFY_CHATS_BLOB_STORE_ID = "chats"

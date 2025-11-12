@@ -2,6 +2,8 @@
 
 A Netlify-deployed AI chatbot application that speaks in dad jokes and demonstrates the Netlify AI Gateway. Built with Effect, TanStack Start, React, and integrates with OpenAI's API.
 
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/IMax153/netlify-ai-gateway)
+
 ## Getting Started
 
 ### Prerequisites

@@ -1,5 +1,5 @@
 [build]
-  command = "NODE_OPTIONS=--max-old-space-size=8192 pnpm build"
+  command = "NODE_OPTIONS=--max-old-space-size=8192 bun run build"
 
 [template.environment]
   NETLIFY_CHATS_BLOB_STORE_ID = "chats"
